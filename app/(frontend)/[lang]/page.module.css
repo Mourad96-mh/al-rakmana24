@@ -1,107 +1,149 @@
-/* Logical properties only — this is what mirrors for /ar (règle d'or #3). */
+/*
+ * Homepage grid, following the reference layout: a hero band split into
+ * lead / secondaries / fil-info, then one "river" per rubrique.
+ *
+ * The newspaper feel comes from the DIVIDERS: vertical hairlines between grid
+ * columns, horizontal ones between stacked items. All of them are logical
+ * (border-inline-start), so the whole page mirrors under /ar (règle d'or #3).
+ */
 
-.page {
-  padding-block: var(--space-xl) var(--space-2xl);
-}
-
-.masthead {
-  border-block-end: 3px solid var(--brand-red);
-  padding-block-end: var(--space-m);
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 2.1fr) minmax(0, 1fr) minmax(0, 1fr);
+  /* Columns must not stretch to the tallest one, or a short lead leaves a
+     large dead gap under it. */
+  align-items: start;
+  gap: var(--space-l);
+  padding-block: var(--space-l) var(--space-xl);
+  border-block-end: 2px solid var(--rule);
   margin-block-end: var(--space-xl);
 }
 
-.kicker {
-  margin: 0 0 var(--space-2xs);
-  font-family: var(--font-body);
-  font-size: var(--step--1);
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--brand-red);
+.heroLead {
+  min-inline-size: 0;
 }
 
-/* Arabic has no uppercase; letter-spacing actively breaks its joins. */
-[dir='rtl'] .kicker {
-  text-transform: none;
-  letter-spacing: normal;
+.heroSecondary {
+  min-inline-size: 0;
+  padding-inline-start: var(--space-l);
+  border-inline-start: 1px solid var(--border);
 }
 
-.title {
-  margin-block-end: var(--space-xs);
+.heroAside {
+  min-inline-size: 0;
+  padding-inline-start: var(--space-l);
+  border-inline-start: 1px solid var(--border);
 }
 
-.lede {
-  max-inline-size: var(--measure);
+.empty {
   color: var(--ink-muted);
-  font-size: var(--step-1);
-  margin-block-end: var(--space-m);
-}
-
-.switch {
-  display: inline-block;
-  padding: var(--space-2xs) var(--space-s);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius);
   font-size: var(--step--1);
-  font-weight: 600;
-  color: var(--ink);
-  text-decoration: none;
 }
 
-.switch:hover {
-  border-color: var(--brand-green-dark);
-  color: var(--brand-green-dark);
-}
+/* ---------- rubrique river ---------- */
 
-.sectionTitle {
-  font-size: var(--step-2);
-  margin-block-end: var(--space-m);
-}
-
-.rubriques {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+.river {
   display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-l);
+}
+
+.riverMain {
+  min-inline-size: 0;
+}
+
+/* The remaining items flow into two hairline-separated columns. */
+.riverRest {
+  grid-column: span 2;
+  min-inline-size: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 var(--space-l);
+  align-content: start;
+}
+
+.riverRest > * {
+  padding-inline-start: var(--space-l);
+  border-inline-start: 1px solid var(--border);
+}
+
+/* ---------- dossiers ---------- */
+
+.dossiers {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
   gap: var(--space-m);
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
 }
 
-.rubrique {
-  border-inline-start: 3px solid var(--brand-green);
-  padding-inline-start: var(--space-s);
-  padding-block: var(--space-3xs);
+/* ---------- most read ---------- */
+
+.mostRead {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0 var(--space-l);
+  align-content: start;
 }
 
-.rubriqueName {
-  font-size: var(--step-1);
-  margin-block-end: var(--space-3xs);
+.mostRead > * {
+  padding-inline-start: var(--space-l);
+  border-inline-start: 1px solid var(--border);
 }
 
-.slug {
-  margin: 0 0 var(--space-2xs);
-  font-family: var(--font-sans);
-  font-size: var(--step--1);
-  color: var(--ink-faint);
-  /* URLs are LTR even inside an RTL page. */
-  direction: ltr;
-  unicode-bidi: embed;
-  text-align: start;
+.mostRead > *:first-child {
+  padding-inline-start: 0;
+  border-inline-start: 0;
 }
 
-.sousRubriques {
-  margin: 0;
-  padding-inline-start: var(--space-s);
-  color: var(--ink-muted);
-  font-size: var(--step--1);
+/* ---------- responsive ---------- */
+
+@media (max-width: 1100px) {
+  .hero {
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  }
+
+  .heroAside {
+    grid-column: 1 / -1;
+    padding-inline-start: 0;
+    border-inline-start: 0;
+    border-block-start: 2px solid var(--rule);
+    padding-block-start: var(--space-m);
+  }
+
+  .river {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  }
+
+  .riverRest {
+    grid-column: span 1;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .mostRead {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
-.note {
-  margin-block-start: var(--space-2xl);
-  padding: var(--space-s);
-  background: var(--surface-alt);
-  border-inline-start: 3px solid var(--brand-red);
-  border-radius: var(--radius);
-  font-size: var(--step--1);
-  color: var(--ink-muted);
+@media (max-width: 760px) {
+  .hero,
+  .river {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-m);
+  }
+
+  .heroSecondary,
+  .riverRest > *,
+  .mostRead > * {
+    padding-inline-start: 0;
+    border-inline-start: 0;
+  }
+
+  .heroSecondary {
+    border-block-start: 1px solid var(--border);
+    padding-block-start: var(--space-m);
+  }
+
+  .mostRead {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

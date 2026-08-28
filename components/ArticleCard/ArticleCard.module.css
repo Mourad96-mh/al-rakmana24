@@ -1,0 +1,186 @@
+/* Logical properties only — mirrors for /ar (règle d'or #3). */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  min-inline-size: 0;
+}
+
+.media {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  background: var(--surface-sunken);
+  margin-block-end: var(--space-3xs);
+}
+
+.image {
+  inline-size: 100%;
+  block-size: auto;
+  transition: transform 0.35s ease;
+}
+
+.card:hover .image {
+  transform: scale(1.03);
+}
+
+/* Honest marker while the newsroom has not uploaded real photography yet. */
+.placeholderTag {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline-start: 0;
+  padding: 2px 8px;
+  background: var(--ink);
+  color: var(--surface);
+  font-family: var(--font-body);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+[dir='rtl'] .placeholderTag {
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.body {
+  display: flex;
+  gap: var(--space-xs);
+  align-items: flex-start;
+}
+
+.text {
+  min-inline-size: 0;
+  flex: 1;
+}
+
+.kicker {
+  margin: 0 0 var(--space-3xs);
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--brand-red);
+}
+
+[dir='rtl'] .kicker {
+  font-size: 0.82rem;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  line-height: var(--leading-tight);
+  letter-spacing: -0.01em;
+}
+
+.titleLink {
+  color: var(--ink);
+  text-decoration: none;
+  background-image: linear-gradient(var(--brand-red), var(--brand-red));
+  background-repeat: no-repeat;
+  background-size: 0 2px;
+  background-position: 0 100%;
+  transition: background-size 0.25s ease;
+}
+
+[dir='rtl'] .titleLink {
+  background-position: 100% 100%;
+}
+
+.card:hover .titleLink {
+  background-size: 100% 2px;
+}
+
+.excerpt {
+  margin: var(--space-2xs) 0 0;
+  color: var(--ink-muted);
+  font-size: var(--step--1);
+  line-height: 1.55;
+  max-inline-size: 58ch;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs);
+  margin: var(--space-2xs) 0 0;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+}
+
+.author {
+  font-weight: 600;
+  color: var(--ink-muted);
+}
+
+.author::after {
+  content: '·';
+  margin-inline-start: var(--space-2xs);
+  color: var(--ink-faint);
+}
+
+/* ---------- Variants ---------- */
+
+.lead .title {
+  font-size: var(--step-4);
+}
+
+.lead .kicker {
+  font-size: 0.78rem;
+}
+
+.standard .title {
+  font-size: var(--step-1);
+}
+
+.compact {
+  padding-block: var(--space-xs);
+  border-block-start: 1px solid var(--border);
+}
+
+.compact:first-child {
+  border-block-start: 0;
+  padding-block-start: 0;
+}
+
+.compact .title {
+  font-size: var(--step-0);
+}
+
+.numbered {
+  padding-block: var(--space-xs);
+  border-block-start: 1px solid var(--border);
+}
+
+.numbered:first-child {
+  border-block-start: 0;
+  padding-block-start: 0;
+}
+
+.numbered .title {
+  font-size: var(--step-0);
+}
+
+.rank {
+  font-family: var(--font-heading);
+  font-size: var(--step-3);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--brand-red);
+  min-inline-size: 1.4ch;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+@media (max-width: 700px) {
+  .lead .title {
+    font-size: var(--step-3);
+  }
+}

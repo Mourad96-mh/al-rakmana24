@@ -1,0 +1,65 @@
+.block {
+  margin-block-end: var(--space-xl);
+}
+
+.heading {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-s);
+  padding-block-end: var(--space-2xs);
+  margin-block-end: var(--space-m);
+  border-block-end: 2px solid var(--rule);
+}
+
+/* Rubrique blocks get the red rule; neutral blocks keep the black one. */
+.accent {
+  border-block-end-color: var(--brand-red);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--step-2);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.accent .title {
+  color: var(--brand-red);
+}
+
+.link {
+  margin-inline-start: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3xs);
+  font-family: var(--font-body);
+  font-size: var(--step--1);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-muted);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+[dir='rtl'] .link {
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.link:hover {
+  color: var(--brand-red);
+}
+
+/* Chevron drawn with borders so it mirrors with `dir` for free. */
+.chevron {
+  inline-size: 0.42em;
+  block-size: 0.42em;
+  border-block-start: 2px solid currentColor;
+  border-inline-end: 2px solid currentColor;
+  transform: rotate(45deg);
+}
+
+[dir='rtl'] .chevron {
+  transform: rotate(-135deg);
+}

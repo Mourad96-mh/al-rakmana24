@@ -1,0 +1,287 @@
+.header {
+  border-block-end: 1px solid var(--border);
+  background: var(--surface);
+}
+
+/* ---------- 1. utility bar (black) ---------- */
+
+.utility {
+  background: var(--surface-invert);
+  color: #ffffff;
+}
+
+.utilityInner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-s);
+  min-block-size: 34px;
+}
+
+.date {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: #b0b0b0;
+  text-transform: uppercase;
+}
+
+[dir='rtl'] .date {
+  text-transform: none;
+  letter-spacing: normal;
+  font-size: 0.8rem;
+}
+
+.utilityActions {
+  margin-inline-start: auto;
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-s);
+}
+
+.langSwitch {
+  align-self: center;
+  color: #ffffff;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+  padding-inline: var(--space-2xs);
+  border-inline-start: 1px solid #333333;
+  border-inline-end: 1px solid #333333;
+}
+
+.langSwitch:hover {
+  color: var(--brand-red);
+}
+
+.subscribe {
+  display: inline-flex;
+  align-items: center;
+  padding-inline: var(--space-s);
+  background: var(--brand-red);
+  color: #ffffff;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+[dir='rtl'] .subscribe {
+  text-transform: none;
+  letter-spacing: normal;
+  font-size: 0.82rem;
+}
+
+.subscribe:hover {
+  background: var(--brand-red-dark);
+  color: #ffffff;
+}
+
+/* ---------- 2. main bar, logo centred ---------- */
+
+.mainInner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-block-size: 92px;
+}
+
+.brand {
+  position: absolute;
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  text-decoration: none;
+  color: var(--ink);
+}
+
+/* translateX flips sign under RTL, otherwise the logo lands off-centre. */
+[dir='rtl'] .brand {
+  transform: translateX(50%);
+}
+
+.logo {
+  block-size: 46px;
+  inline-size: auto;
+}
+
+.wordmark {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.05;
+}
+
+.wordmarkName {
+  font-family: var(--font-heading);
+  font-size: 1.65rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.wordmarkTag {
+  font-family: var(--font-body);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--brand-red);
+  white-space: nowrap;
+}
+
+[dir='rtl'] .wordmarkTag {
+  letter-spacing: normal;
+  text-transform: none;
+  font-size: 0.72rem;
+}
+
+.menuButton,
+.searchButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  color: var(--ink);
+  text-decoration: none;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+[dir='rtl'] .menuButton,
+[dir='rtl'] .searchButton {
+  letter-spacing: normal;
+  text-transform: none;
+  font-size: 0.82rem;
+}
+
+.menuButton:hover,
+.searchButton:hover {
+  color: var(--brand-red);
+}
+
+.burger {
+  inline-size: 20px;
+  block-size: 12px;
+  border-block-start: 2px solid currentColor;
+  border-block-end: 2px solid currentColor;
+  position: relative;
+}
+
+.burger::after {
+  content: '';
+  position: absolute;
+  inset-block-start: 3px;
+  inset-inline: 0;
+  border-block-start: 2px solid currentColor;
+}
+
+.searchIcon {
+  inline-size: 13px;
+  block-size: 13px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  position: relative;
+}
+
+.searchIcon::after {
+  content: '';
+  position: absolute;
+  inset-block-end: -6px;
+  inset-inline-end: -3px;
+  inline-size: 2px;
+  block-size: 7px;
+  background: currentColor;
+  transform: rotate(-45deg);
+}
+
+[dir='rtl'] .searchIcon::after {
+  transform: rotate(45deg);
+}
+
+/* ---------- 3. rubrique strip ---------- */
+
+.nav {
+  border-block-start: 2px solid var(--rule);
+  border-block-end: 1px solid var(--border);
+}
+
+.navInner {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.navInner::-webkit-scrollbar {
+  display: none;
+}
+
+.navList {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  white-space: nowrap;
+}
+
+.navLink {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-2xs) var(--space-s);
+  font-family: var(--font-body);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink);
+  text-decoration: none;
+  border-block-end: 3px solid transparent;
+}
+
+[dir='rtl'] .navLink {
+  letter-spacing: normal;
+  text-transform: none;
+  font-size: 0.92rem;
+}
+
+.navLink:hover {
+  color: var(--brand-red);
+  border-block-end-color: var(--brand-red);
+}
+
+@media (max-width: 900px) {
+  .mainInner {
+    min-block-size: 72px;
+  }
+
+  .brand {
+    position: static;
+    transform: none;
+    margin-inline: auto;
+  }
+
+  [dir='rtl'] .brand {
+    transform: none;
+  }
+
+  .wordmarkTag,
+  .menuLabel {
+    display: none;
+  }
+
+  .wordmarkName {
+    font-size: 1.25rem;
+  }
+
+  .logo {
+    block-size: 36px;
+  }
+}

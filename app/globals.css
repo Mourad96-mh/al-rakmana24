@@ -10,30 +10,37 @@
  */
 
 :root {
-  /* --- Brand: sampled from the logo (chevrons forming a globe, red + green) --- */
+  /*
+   * Palette: RED / BLACK / WHITE only (client instruction).
+   * Red is the single accent — rubrique kickers, section rules, the subscribe
+   * CTA, hover states. Everything else is black, white, or a neutral grey.
+   * The red is sampled from the logo so the mark and the chrome agree.
+   *
+   * Note: the logo itself also contains green. It is used as supplied and is the
+   * one place green appears on the site.
+   */
   --brand-red: #d92415;
   --brand-red-dark: #a4180c;
   --brand-red-tint: #fdeceb;
-  --brand-green: #15a52a;
-  --brand-green-dark: #0d5c1c;
-  --brand-green-tint: #eaf7ec;
 
-  /* --- Neutrals --- */
-  --ink: #101418;
+  /* --- Neutrals: true black through true white --- */
+  --ink: #0a0a0a;
   --ink-strong: #000000;
-  --ink-muted: #59636e;
-  --ink-faint: #8b949d;
+  --ink-muted: #5c5c5c;
+  --ink-faint: #8f8f8f;
   --surface: #ffffff;
-  --surface-alt: #f5f6f7;
-  --surface-sunken: #eceef0;
-  --border: #e2e5e8;
-  --border-strong: #c9ced4;
+  --surface-alt: #f5f5f5;
+  --surface-sunken: #ebebeb;
+  --surface-invert: #0a0a0a;
+  --border: #e0e0e0;
+  --border-strong: #c4c4c4;
+  --rule: #0a0a0a;
 
   /* --- Semantic --- */
   --accent: var(--brand-red);
   --accent-hover: var(--brand-red-dark);
-  --link: var(--brand-red-dark);
-  --focus-ring: var(--brand-green-dark);
+  --link: var(--ink);
+  --focus-ring: var(--brand-red);
 
   /* --- Type families ---
    * Latin and Arabic are set separately on purpose: reusing one scale across
@@ -176,6 +183,24 @@ video {
   max-inline-size: var(--container);
   margin-inline: auto;
   padding-inline: var(--space-s);
+}
+
+.skip-link {
+  position: absolute;
+  inset-block-start: -100%;
+  inset-inline-start: 0;
+  z-index: 100;
+  padding: var(--space-2xs) var(--space-s);
+  background: var(--ink);
+  color: #ffffff;
+  font-size: var(--step--1);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  inset-block-start: 0;
+  color: #ffffff;
 }
 
 .visually-hidden {

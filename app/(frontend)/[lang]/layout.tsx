@@ -5,7 +5,10 @@ import { NextIntlClientProvider, hasLocale } from 'next-intl'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { Inter, Source_Serif_4, IBM_Plex_Sans_Arabic } from 'next/font/google'
 
-import { routing, dirOf } from '@/lib/i18n/routing'
+import { routing, dirOf, type AppLocale } from '@/lib/i18n/routing'
+import { Header } from '@/components/Header/Header'
+import { Footer } from '@/components/Footer/Footer'
+import { DemoBanner } from '@/components/DemoBanner/DemoBanner'
 import '../../globals.css'
 
 /* Latin: serif for headlines, sans for UI and body. */
@@ -77,7 +80,16 @@ export default async function FrontendLayout({
     >
       {/* suppressHydrationWarning: browser extensions inject attributes on <body>. */}
       <body suppressHydrationWarning>
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider>
+          <a className="skip-link" href="#contenu">
+            {lang === 'ar' ? 'الانتقال إلى المحتوى الرئيسي' : 'Aller au contenu principal'}
+          </a>
+          {/* Remove together with lib/demo-content.ts in Lot 3. */}
+          <DemoBanner locale={lang as AppLocale} />
+          <Header locale={lang as AppLocale} />
+          {children}
+          <Footer locale={lang as AppLocale} />
+        </NextIntlClientProvider>
       </body>
     </html>
   )

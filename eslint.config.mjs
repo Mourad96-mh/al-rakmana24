@@ -56,4 +56,17 @@ export default tseslint.config(
     files: ['app/(payload)/**'],
     rules: { '@typescript-eslint/no-explicit-any': 'off' },
   },
+
+  {
+    // Build-time Node scripts: not bundled, so they get Node globals.
+    files: ['scripts/**', '*.config.{js,mjs,ts}'],
+    languageOptions: {
+      globals: {
+        process: 'readonly',
+        Buffer: 'readonly',
+        console: 'readonly',
+        __dirname: 'readonly',
+      },
+    },
+  },
 )
