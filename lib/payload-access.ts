@@ -1,10 +1,13 @@
-import type { Access, FieldAccess } from 'payload'
+import type { Access, CollectionBeforeChangeHook, FieldAccess, Field, Where } from 'payload'
 
 /**
  * Reusable Payload access controls.
  *
- * Imported RELATIVELY from `collections/*` (règle d'or #5). Expanded in Lot 2
- * when the remaining collections land; the role vocabulary is already final.
+ * Imported RELATIVELY from `collections/*` and `fields/*` (règle d'or #5).
+ *
+ * The model in one sentence: **staff read everything, the public reads what is
+ * published, and a `contributeur` can write drafts but can never publish, never
+ * touch someone else's work, and never delete.**
  */
 
 export const ROLES = [
@@ -28,7 +31,7 @@ export const STAFF_ROLES: readonly Role[] = [
 /** Roles allowed to create and edit editorial content. */
 export const EDITORIAL_ROLES: readonly Role[] = ['admin', 'redacteur-en-chef', 'journaliste']
 
-type MaybeUser = { role?: Role | null } | null | undefined
+type MaybeUser = { role?: Role | null; id?: string | number } | null | undefined
 
 const roleOf = (user: MaybeUser): Role | undefined => user?.role ?? undefined
 
@@ -37,24 +40,64 @@ const hasRole = (user: MaybeUser, roles: readonly Role[]): boolean => {
   return role !== undefined && roles.includes(role)
 }
 
+const userOf = (req: { user?: unknown }): MaybeUser => req.user as MaybeUser
+
 /** Anyone may read. Used for published editorial content. */
 export const publicRead: Access = () => true
 
-export const isAdmin: Access = ({ req }) => roleOf(req.user as MaybeUser) === 'admin'
+export const isAdmin: Access = ({ req }) => roleOf(userOf(req)) === 'admin'
 
-export const isEditorial: Access = ({ req }) => hasRole(req.user as MaybeUser, EDITORIAL_ROLES)
+export const isEditorial: Access = ({ req }) => hasRole(userOf(req), EDITORIAL_ROLES)
 
-export const isStaff: Access = ({ req }) => hasRole(req.user as MaybeUser, STAFF_ROLES)
+export const isStaff: Access = ({ req }) => hasRole(userOf(req), STAFF_ROLES)
+
+/** A contributor: may draft, may not publish. */
+export const isContributeur = (user: MaybeUser): boolean => roleOf(user) === 'contributeur'
 
 /**
  * Contributors may create drafts but never publish or delete; the editorial
  * roles above own the publish button.
  */
-export const canCreateContent: Access = ({ req }) => hasRole(req.user as MaybeUser, STAFF_ROLES)
+export const canCreateContent: Access = ({ req }) => hasRole(userOf(req), STAFF_ROLES)
+
+/**
+ * Read access for a collection with drafts enabled.
+ *
+ * Anonymous visitors and `abonne` accounts see published documents only. Staff
+ * see drafts too, which is what makes Payload's live preview and the admin list
+ * view work.
+ *
+ * NOTE: this returns a Where clause rather than `false` for the public, so the
+ * public REST/GraphQL API stays usable — the site itself is a consumer of it.
+ */
+export const readPublished: Access = ({ req }) => {
+  if (hasRole(userOf(req), STAFF_ROLES)) return true
+  return { _status: { equals: 'published' } }
+}
+
+/**
+ * Update access for a collection with drafts enabled.
+ *
+ * A contributor is confined to their own unpublished work. Once a document is
+ * published, it leaves their hands entirely — reopening it is an editor's call.
+ */
+export const canUpdateContent: Access = ({ req }) => {
+  const user = userOf(req)
+  if (hasRole(user, EDITORIAL_ROLES)) return true
+  if (isContributeur(user) && user?.id !== undefined) {
+    const own: Where = { creePar: { equals: user.id } }
+    const unpublished: Where = { _status: { not_equals: 'published' } }
+    return { and: [own, unpublished] }
+  }
+  return false
+}
+
+/** Deleting published history is an editorial act. */
+export const canDeleteContent: Access = isEditorial
 
 /** A user may read/update their own record; admins may touch any. */
 export const adminOrSelf: Access = ({ req }) => {
-  const user = req.user as (MaybeUser & { id?: string | number }) | null
+  const user = userOf(req)
   if (!user) return false
   if (roleOf(user) === 'admin') return true
   return { id: { equals: user.id } }
@@ -65,7 +108,53 @@ export const adminOrSelf: Access = ({ req }) => {
  * Keeps `abonne` (newsletter/free account holders) out of the CMS entirely.
  */
 export const staffAdminPanel = ({ req }: { req: { user?: unknown } }): boolean =>
-  hasRole(req.user as MaybeUser, STAFF_ROLES)
+  hasRole(userOf(req), STAFF_ROLES)
 
 /** Only an admin may change a role — prevents privilege escalation via the form. */
-export const adminFieldOnly: FieldAccess = ({ req }) => roleOf(req.user as MaybeUser) === 'admin'
+export const adminFieldOnly: FieldAccess = ({ req }) => roleOf(userOf(req)) === 'admin'
+
+/**
+ * Records who first created a document.
+ *
+ * Read-only and hidden: it is authorization data, not editorial metadata. Its
+ * only job is to give `canUpdateContent` something to compare a contributor
+ * against. The byline shown to readers is the `auteurs` relationship, which is
+ * a different thing entirely — a staff writer can file a piece on behalf of an
+ * outside contributor and vice versa.
+ */
+export const createdByField = (): Field => ({
+  name: 'creePar',
+  type: 'relationship',
+  relationTo: 'users',
+  label: { fr: 'Créé par', ar: 'أنشأه' },
+  access: {
+    create: () => false,
+    update: () => false,
+  },
+  admin: { readOnly: true, position: 'sidebar', hidden: true },
+})
+
+/**
+ * Collection `beforeChange` hooks that back the two rules above.
+ *
+ * `enforceDraftForContributors` is the load-bearing one. Payload has no field
+ * access control on `_status`, so without this a contributor could publish by
+ * POSTing `{"_status":"published"}` straight to the REST API, bypassing the
+ * admin UI's disabled button.
+ */
+export const stampCreator: CollectionBeforeChangeHook = ({ data, operation, req }) => {
+  if (operation !== 'create') return data
+  const user = userOf(req)
+  if (user?.id === undefined) return data
+  return { ...data, creePar: user.id }
+}
+
+export const enforceDraftForContributors: CollectionBeforeChangeHook = ({ data, req }) => {
+  if (!isContributeur(userOf(req))) return data
+  return { ...data, _status: 'draft' }
+}
+
+/** The pair, in the order collections should apply them. */
+export const editorialHooks = {
+  beforeChange: [stampCreator, enforceDraftForContributors],
+}

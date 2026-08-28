@@ -39,23 +39,32 @@ Objectif : un squelette qui build, avec Payload branché sur Neon et le bilingue
 
 ---
 
-## Lot 2 — Modèle de contenu ⬜
+## Lot 2 — Modèle de contenu 🟡 (bloqué sur `DATABASE_URI`)
+
+> **Fait & vérifié sans base** : les 13 collections, les 4 helpers de champs, les
+> contrôles d'accès par rôle et le seed bilingue sont écrits.
+> `payload generate:types` ✓ (`payload-types.ts` généré, il n'a pas besoin de la base),
+> `tsc --noEmit` ✓, `pnpm lint` ✓, `pnpm build` ✓ (`/fr` et `/ar` toujours en **SSG**),
+> smoke `next start` ✓ (`/`→307 `/fr`, `/fr`+`/ar`=200 avec `dir` correct).
+> **Reste, et c'est le même blocage qu'au Lot 1** : sans chaîne Neon, `/admin`
+> renvoie 500 (`ECONNREFUSED ::1:5432` — la variable est vide, `pg` retombe sur
+> localhost) et `pnpm seed` ne peut pas tourner. Rien d'autre ne bloque.
 
 Objectif : les 13 collections, les helpers de champs, un seed bilingue idempotent.
 
-- [ ] Helpers `fields/` :
+- [x] Helpers `fields/` :
   - `slugField` — hook auto-slug **Unicode-aware** (doit produire des slugs arabes corrects, pas une chaîne vide ; `localized: true`).
   - `seoField` (title, description, image, noindex) — `localized: true`.
   - `accessLevelField` (`public` | `metered` | `premium`) — **présent mais dormant**, défaut `public` (règle d'or #1).
   - `rubriqueField` / `sousRubriqueField` — options issues du tableau de `/CLAUDE.md` §7, non localisées.
-- [ ] Collections : `Articles` `Auteurs` `Podcasts` `Startups` `Entreprises` `Personnalites` `TextesJuridiques` `Dossiers` `Tags` `Pages` `Newsletter` `Media` `Users`.
-- [ ] `Articles` : drafts + versions activés, `format` (Actualité/Analyse/Décryptage/Interview/Tribune/Infographie), `publishedAt`, `coverImage`, relations vers startups / entreprises / personnalites / textes-juridiques / dossiers / tags / auteurs.
-- [ ] Champs **localisés** : `title`, `slug`, `excerpt`, `body`, `seo`. Tout le reste partagé.
-- [ ] Rôles + contrôles d'accès réutilisables (`lib/payload-access.ts`, imports relatifs) : `publicRead` en lecture ; `staffOnly` (admin | redacteur-en-chef | journaliste) en écriture ; `contributeur` = drafts seulement ; `Users` = `adminOrSelf`, champ `role` réservé admin.
-- [ ] Groupes dans l'admin Payload + labels **en français** (c'est une rédaction francophone).
-- [ ] `scripts/seed.ts` idempotent, **bilingue** : quelques articles FR-only, AR-only et FR+AR — pour que le Lot 3 teste réellement le cas de traduction partielle.
+- [x] Collections : `Articles` `Auteurs` `Podcasts` `Startups` `Entreprises` `Personnalites` `TextesJuridiques` `Dossiers` `Tags` `Pages` `Newsletter` `Media` `Users`.
+- [x] `Articles` : drafts + versions activés, `format` (Actualité/Analyse/Décryptage/Interview/Tribune/Infographie), `publishedAt`, `coverImage`, relations vers startups / entreprises / personnalites / textes-juridiques / dossiers / tags / auteurs.
+- [x] Champs **localisés** : `title`, `slug`, `excerpt`, `body`, `seo`. Tout le reste partagé.
+- [x] Rôles + contrôles d'accès réutilisables (`lib/payload-access.ts`, imports relatifs) : `publicRead` en lecture ; `staffOnly` (admin | redacteur-en-chef | journaliste) en écriture ; `contributeur` = drafts seulement ; `Users` = `adminOrSelf`, champ `role` réservé admin.
+- [x] Groupes dans l'admin Payload + labels **en français** (c'est une rédaction francophone).
+- [x] `scripts/seed.ts` idempotent, **bilingue** *(écrit, pas encore exécuté — base absente)* : quelques articles FR-only, AR-only et FR+AR — pour que le Lot 3 teste réellement le cas de traduction partielle.
 
-**Vert quand** : `pnpm seed` deux fois de suite ne duplique rien ; les données sont vérifiables en REST ; un article AR a bien un slug arabe ; `lint` ✓ `build` ✓.
+**Vert quand** *(reste à faire, dès que la base répond)* : `pnpm seed` deux fois de suite ne duplique rien ; les données sont vérifiables en REST ; un article AR a bien un slug arabe ; `lint` ✓ `build` ✓.
 
 ---
 
