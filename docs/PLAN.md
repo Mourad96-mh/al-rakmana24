@@ -8,7 +8,14 @@ Statut : `⬜ à faire` · `🟡 en cours` · `✅ fait & vérifié`
 
 ---
 
-## Lot 1 — Fondations ⬜
+## Lot 1 — Fondations 🟡 (bloqué sur `DATABASE_URI`)
+
+> **Fait & vérifié** : squelette Next 15.5.19 + Payload 3.85.1, bilingue FR/AR complet,
+> `pnpm lint` ✓, `pnpm build` ✓ (`/fr` et `/ar` en **SSG**), smoke `next start` ✓
+> (`/`→307 `/fr`, `/fr`+`/ar`=200 avec `dir` correct, rubrique inconnue=404).
+> **Reste** : la chaîne de connexion Neon — sans elle `/admin` renvoie 500 et
+> `generate:types` / `generate:importmap` / `seed` ne peuvent pas tourner.
+
 
 Objectif : un squelette qui build, avec Payload branché sur Neon et le bilingue configuré.
 

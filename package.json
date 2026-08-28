@@ -1,0 +1,50 @@
+{
+  "name": "al-raqmana24",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Al-Raqmana24.ma — journal marocain FR/AR sur l'economie numerique, le droit du numerique, les startups, la legaltech et la fintech.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "payload": "payload",
+    "generate:types": "payload generate:types",
+    "generate:importmap": "payload generate:importmap",
+    "seed": "node --env-file=.env --import tsx ./scripts/seed.ts",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "@payloadcms/db-postgres": "3.85.1",
+    "@payloadcms/next": "3.85.1",
+    "@payloadcms/richtext-lexical": "3.85.1",
+    "@payloadcms/translations": "3.85.1",
+    "@payloadcms/ui": "3.85.1",
+    "graphql": "^16.9.0",
+    "next": "15.5.19",
+    "next-intl": "^4.1.0",
+    "payload": "3.85.1",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "sharp": "0.34.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@next/eslint-plugin-next": "^15.5.19",
+    "@playwright/test": "^1.56.0",
+    "@swc-node/register": "^1.10.9",
+    "@swc/core": "^1.10.1",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5",
+    "typescript-eslint": "^8.68.0"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}

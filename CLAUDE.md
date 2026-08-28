@@ -183,9 +183,24 @@ Publish flow: Payload `afterChange` → `revalidatePath` for **both** locales �
   Exclusions must be set in McAfee's and Reason's own UI.
 - **Never run `pnpm build` while the user's `next dev` is running** — it corrupts `.next`.
   Never leave a background dev server up.
-- **pnpm 11 supply-chain policy**: needs `.npmrc` `verify-deps-before-run=false` plus
-  `onlyBuiltDependencies` + `allowBuilds: true` in `pnpm-workspace.yaml` for `sharp`,
-  `unrs-resolver`, `esbuild` — otherwise every `pnpm <script>` fails.
+- **pnpm 11 reads its settings from `pnpm-workspace.yaml`, NOT `.npmrc`.** Without
+  `verifyDepsBeforeRun: false` there, pnpm re-runs `pnpm install` before every script,
+  hits `ERR_PNPM_IGNORED_BUILDS`, and the script never starts. `.npmrc`'s
+  `verify-deps-before-run=false` is ignored — keep the YAML as the source of truth.
+  `ERR_PNPM_IGNORED_BUILDS` still prints on an explicit `pnpm install`; harmless here
+  because sharp, esbuild, @swc/core and unrs-resolver all ship prebuilt binaries
+  (`require('sharp')` verified working, libvips 8.17.3).
+- **There is a `node_modules` with ~568 packages in the HOME directory**
+  (`C:\Users\MOURAD\node_modules`, alongside a stray `package.json`). It is an ancestor
+  of every project under `Bureau\`, so Node can resolve packages out of it —
+  it holds `@typescript-eslint`, `@eslint`, `@babel` and more. Suspect it whenever a
+  tool behaves as though a dependency you never installed is present.
+- **Do not use `FlatCompat` in `eslint.config.mjs`.** The legacy eslintrc resolver it
+  wraps resolved `@next/eslint-plugin-next` out of a **sibling project**
+  (`Bureau\crewstay\node_modules`), whose older copy calls `context.getAncestors()` —
+  removed in ESLint 9 — crashing every lint run. The config now imports the plugins
+  directly. Also pin `@next/eslint-plugin-next` to the Next version (15.5.19):
+  `pnpm add -D @next/eslint-plugin-next` alone pulls the Next **16** plugin.
 - **`next.config.ts` must pin `outputFileTracingRoot`**, else Next picks up the lockfile
   from the parent home directory.
 - **This folder is its own git repo** (`git init` run here). The parent

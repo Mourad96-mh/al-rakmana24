@@ -1,0 +1,56 @@
+{
+  "site": {
+    "name": "Al-Raqmana24",
+    "tagline": "Entreprendre, Innover, Digitaliser.",
+    "description": "L'actualité de l'économie numérique, du droit du numérique, des startups, de la legaltech et de la fintech au Maroc."
+  },
+  "nav": {
+    "home": "Accueil",
+    "podcast": "Podcast",
+    "search": "Rechercher",
+    "menu": "Menu",
+    "close": "Fermer",
+    "skipToContent": "Aller au contenu principal",
+    "switchToArabic": "العربية",
+    "switchLanguage": "Changer de langue"
+  },
+  "footer": {
+    "redaction": "La rédaction",
+    "about": "Qui sommes-nous ?",
+    "join": "Nous rejoindre",
+    "contact": "Nous contacter",
+    "legal": "Mentions légales",
+    "privacy": "Politique de confidentialité",
+    "rights": "Tous droits réservés."
+  },
+  "newsletter": {
+    "title": "S'abonner gratuitement",
+    "intro": "Recevez chaque semaine l'essentiel du numérique marocain.",
+    "email": "Adresse e-mail",
+    "submit": "Je m'abonne",
+    "consent": "J'accepte de recevoir la newsletter d'Al-Raqmana24. Je peux me désabonner à tout moment.",
+    "success": "Merci, votre inscription est enregistrée.",
+    "error": "L'inscription a échoué. Merci de réessayer."
+  },
+  "article": {
+    "readMore": "Lire la suite",
+    "publishedOn": "Publié le",
+    "updatedOn": "Mis à jour le",
+    "by": "Par",
+    "readingTime": "{minutes} min de lecture",
+    "alsoRead": "À lire aussi",
+    "inThisArticle": "Dans cet article",
+    "notAvailableInLocale": "Cet article n'est pas disponible en français."
+  },
+  "listing": {
+    "latest": "Dernières publications",
+    "topStories": "À la une",
+    "empty": "Aucun article publié dans cette rubrique pour le moment.",
+    "loadMore": "Voir plus"
+  },
+  "error": {
+    "notFoundTitle": "Page introuvable",
+    "notFoundBody": "La page que vous cherchez n'existe pas ou a été déplacée.",
+    "backHome": "Retour à l'accueil"
+  }
+}

@@ -1,0 +1,18 @@
+# pnpm 10+/11 reads its settings from HERE, not from .npmrc.
+# Without verifyDepsBeforeRun:false, every `pnpm <script>` re-runs `pnpm install`
+# and dies on ERR_PNPM_IGNORED_BUILDS before the script ever starts.
+verifyDepsBeforeRun: false
+
+onlyBuiltDependencies:
+  - '@parcel/watcher'
+  - '@swc/core'
+  - esbuild
+  - sharp
+  - unrs-resolver
+
+allowBuilds:
+  '@parcel/watcher': set this to true or false
+  '@swc/core': set this to true or false
+  esbuild: set this to true or false
+  sharp: set this to true or false
+  unrs-resolver: set this to true or false

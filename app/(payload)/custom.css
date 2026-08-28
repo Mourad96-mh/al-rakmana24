@@ -1,0 +1,6 @@
+/* Charte Al-Raqmana24 dans le panneau d'administration.
+   Le rouge et le vert viennent du logo (chevrons formant un globe). */
+:root {
+  --theme-success-500: #16a32a;
+  --theme-elevation-1000: #101418;
+}
