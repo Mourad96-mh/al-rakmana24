@@ -1,20 +1,19 @@
-# Reprise — le Lot 3 est clos
+# Reprise — les Lots 3 et 4 sont clos
 
-Point d'arrêt du 15 septembre 2026, 13 h 30. À lire avant de reprendre.
+Point d'arrêt du 15 septembre 2026, 14 h 00. À lire avant de reprendre.
 
 État de l'arbre : `pnpm lint` ✓ · `npx tsc --noEmit` ✓ · `pnpm build` ✓ ·
 smoke `next start` ✓ · aucun serveur ne tourne · aucun fichier temporaire ·
-base propre (les documents de test de la session ont été supprimés et la
-suppression a été **vérifiée** : 0 ligne résiduelle dans `videos`, `documents`
-et `fichiers`).
+base propre (les documents de test des deux sessions ont été supprimés et la
+suppression a été **vérifiée**).
 
 ---
 
-## 1. Ce qui a été fait cette session
+## 1. Lot 3 — pages éditoriales (commit `30108d2`)
 
 **Les quatre dernières familles de `lib/queries.ts` sont passées sur Payload, et
-`lib/demo/` a été supprimé** (≈ 3 200 lignes). Il n'existe plus une seule
-fixture inventée dans le code : tout ce que le site affiche sort du CMS.
+`lib/demo/` a été supprimé** (≈ 3 200 lignes). Plus une seule fixture inventée
+dans le code : tout ce que le site affiche sort du CMS.
 
 | Famille | Collection | Notes |
 | --- | --- | --- |
@@ -23,156 +22,167 @@ fixture inventée dans le code : tout ce que le site affiche sort du CMS.
 | `listVideos` | `Videos` | URL passée par `parseVideoUrl()` |
 | `listDocuments` / `documentsByCategory` / `listTexteDownloads` | `Documents` | `fichier` **localisé** |
 
-### `loadPublished()` — le jumeau de `loadDocs()`
+`loadPublished()` est le jumeau de `loadDocs()` pour les collections à
+brouillons : `payload.find` avec `overrideAccess` renvoie volontiers les
+brouillons, donc sans filtre un texte en cours d'écriture part en ligne. Deux
+fonctions plutôt qu'un drapeau — l'oubli se voit au point d'appel.
 
-Ces quatre collections ont des **brouillons**. `payload.find` avec
-`overrideAccess` les renvoie volontiers : sans filtre, un texte en cours
-d'écriture part en ligne. D'où deux fonctions plutôt qu'un drapeau — l'oubli se
-voit au point d'appel au lieu de se cacher dans un argument par défaut.
+Décisions notables : un épisode existe dans une locale s'il a un titre et un
+slug (pas des notes — sinon `podcastParams` et `getPodcast` divergent) ;
+`episode` et `duration` optionnels comme dans la collection ; lecteur audio réel
+dès que `embedUrl` est renseigné ; `AuthorSummary` porte `bio` ; les pages
+institutionnelles s'adressent par `cle`.
 
-### Décisions prises, et pourquoi
-
-- **Un épisode existe dans une locale s'il y a un titre et un slug**, pas des
-  notes. Exiger les notes ferait diverger `podcastParams()` et `getPodcast()` :
-  la route serait prérendue puis répondrait 404. C'est exactement la classe de
-  bug que `slugParams()` avait été écrit pour clore.
-- **`PodcastSummary.episode` et `.duration` sont devenus optionnels**, parce que
-  `numero` et `duree` le sont dans la collection. « Épisode undefined » est pire
-  que pas de badge du tout. La carte et la page les rendent sous condition.
-- **Le lecteur audio n'est plus un placeholder inconditionnel.** `embedUrl`
-  renseigné → l'iframe de l'hébergeur ; absent → une phrase honnête. Et le
-  bandeau « aucun enregistrement n'est encore disponible » de la liste ne
-  s'affiche plus que si **aucun** épisode n'a de lecteur (`hasAudio` sur le
-  résumé) : il disparaîtra tout seul le jour où l'hébergeur sera choisi, au lieu
-  de rester à contredire les épisodes en dessous.
-- **`AuthorSummary` porte désormais `bio`.** « La rédaction » lisait encore les
-  bios depuis `lib/demo/auteurs` ; les charger une par une aurait coûté une
-  requête par signature sur une page qui a déjà tous les documents en main.
-- **`getPage` s'adresse par `cle`**, jamais par slug — les URL sont des
-  pathnames localisés, donc l'adresse doit être indépendante de la langue.
-- **La transcription** (« le seul texte que Google peut lire ») est rendue dans
-  un `<details>` sous les notes. Elle était saisissable en back-office et
-  n'apparaissait nulle part.
-
-### La bibliothèque de photos de démonstration a suivi `lib/demo`
-
-Plus rien ne renseignait `ImageInput.photo` : le deuxième étage de
-`resolveMedia()` était mort. Supprimés — `lib/photos.ts`, `lib/photos.json`,
-`scripts/fetch-photos.mjs`, la commande `pnpm photos` et `public/photos/`
-(115 fichiers, 4,2 Mo) — ainsi que `public/downloads/`, deux PDF de
-démonstration que plus aucune page ne référençait. `resolveMedia()` n'a plus
-que deux étages : **l'upload réel, puis la vignette d'attente**. Vérifié sur
-`/fr` : 8 images, toutes résolues, aucune vers `/photos/`, aucun fichier
-manquant.
-
-### Deux trous bouchés au passage
-
-1. **Trois pages institutionnelles manquaient au seed** : `nous-rejoindre`,
-   `mentions-legales`, `politique-de-confidentialite`. Le pied de page y renvoie
-   depuis **chaque page du site** ; sans document derrière la clé, `getPage`
-   renvoie `null` et les trois liens répondaient 404, dans les deux langues. Le
-   seed crée maintenant les six clés, les deux pages juridiques en `noindex`.
-2. **La route `/confidentialite` cherchait la clé `confidentialite`**, alors que
-   `collections/Pages.ts` propose `politique-de-confidentialite`. Le segment
-   d'URL et la clé de contenu diffèrent — ici et nulle part ailleurs. Consigné
-   dans `CLAUDE.md` §9.
+Trous bouchés : trois pages institutionnelles manquaient au seed alors que le
+pied de page y renvoie depuis chaque page (404 en FR et en AR), et la route
+`/confidentialite` cherchait la clé `confidentialite` là où `Pages` propose
+`politique-de-confidentialite`. La bibliothèque de photos de démonstration a
+suivi `lib/demo` : `resolveMedia()` n'a plus que deux étages.
 
 ---
 
-## 2. Ce qui a été vérifié, et comment
+## 2. Lot 4 — hubs d'entités
 
-`pnpm build` → **112 routes prérendues**. Contrôle du manifeste refait, comme
-l'exige tout changement de `generateStaticParams` (`podcastParams` a changé) :
+Les sept routes et la liste dérivée existaient déjà. Ce qui a été ajouté :
 
-```
-/ar routes: 54 · clés /ar non encodées: 0
-/ar/podcast/%D8%A7%D9%84%D8%AD%D9%84%D9%82%D9%87-1-...   <- encodée
-```
+### `EntityData` — l'identité comme donnée, et non comme chaîne d'affichage
 
-Smoke sur `next start` : **19 URL, 0 échec** — accueil, podcast (liste +
-épisode, FR et AR), les six pages institutionnelles, documents, recherche, et
-un épisode inexistant qui répond bien 404.
+Le panneau d'identité (`facts`) était lu directement depuis le document Payload.
+Le JSON-LD, lui, a besoin des **valeurs brutes** : `foundingDate`, une date ISO,
+un identifiant de texte — tout ce qu'un libellé détruit. Écrire les deux depuis
+le document aurait donné deux lectures des mêmes champs, donc deux endroits à
+corriger au premier renommage, dont un invisible.
 
-Rendu contrôlé dans le HTML servi, pas seulement le code HTTP : iframe du
-lecteur présente, badge d'épisode présent, `timeRequired: PT32M` et
-`associatedMedia` dans le JSON-LD, bandeau « aucun enregistrement » **absent**
-(l'épisode du seed a un `embedUrl`), bios de « La rédaction » venant de Payload.
+`entityDataOf()` fait donc **une** lecture et produit `EntityData` (union
+discriminée par `kind`). `factsOf(data, locale)` en dérive l'affichage,
+`lib/jsonld.ts` en dérive le schema.org. Le panneau visible et le JSON-LD
+invisible ne peuvent plus diverger.
 
-Vidéos et documents n'ont pas de données de seed (le seed ne pousse aucun
-fichier, par choix — voir son en-tête). Ils ont donc été vérifiés par des lignes
-jetables créées via le Local API, relues **à travers `lib/queries`**, puis
-supprimées :
+### `lib/jsonld.ts` + `components/JsonLd`
 
-```
-listVideos    fr: ZZTEST video francais [youtube:dQw4w9WgXcQ] kicker=... dur=512
-              ar: ZZTEST video arabe [youtube:dQw4w9WgXcQ]
-              brouillon écarté: true · limit respecté: true
-listDocuments fr: ZZTEST contrat type [contrat] pdf 324o https://res.cloudinary.com/...
-              ar: []        <- document FR-only, absent de /ar (règle d'or #2)
-teardown      videos 0 · documents 0 · fichiers 0 lignes résiduelles
-```
+- `Organization` (startups, entreprises) · `Person` (personnalités) ·
+  `Legislation` (textes) — `Legislation` et non `CreativeWork` : c'est ce qui
+  conserve `legislationIdentifier` et `legislationDate`, les deux propriétés qui
+  rendent un texte trouvable par sa référence plutôt que par son titre.
+- `CollectionPage` + `ItemList` sur les quatre index de hub, et sur les pages
+  dossier / tag / auteur. La page auteur porte en plus un `about: Person`.
+- Un seul `@graph` par page, `mainEntity` pointant sur l'entité : c'est ce qui
+  dit qu'une page **porte sur** la startup au lieu de simplement la mentionner.
+- L'éditeur `NewsMediaOrganization` est déclaré une fois et repris par `@id`
+  (`PUBLISHER_ID`). **Le Lot 7 devra y rattacher `WebSite` et les articles**,
+  qui déclarent encore leur éditeur en toutes lettres.
+- `components/JsonLd` échappe `<` en `<`. Un titre contenant `</script>`
+  fermait sinon la balise et déversait la suite du document en markup ; les deux
+  scripts déjà en place (article, podcast) sont passés par le composant.
 
-Deux verrous du modèle confirmés au passage, tous deux dans `CLAUDE.md` §9 :
-`collections/Videos.ts` **refuse** une URL non reconnue à l'enregistrement, et
-`Documents.fichier` étant `required` **et** `localized`, Payload **refuse** une
-traduction arabe du titre sans le fichier arabe.
+**Rien n'est inventé** : chaque propriété vient de `EntityData`, et un champ non
+saisi est `undefined`, donc absent du JSON (`JSON.stringify` le supprime). Une
+propriété absente est correcte ; une propriété vide ou devinée est un mensonge
+adressé à une machine qui ne peut pas le détecter. Les libellés de vocabulaire
+passent par `vocabLabel()` : schema.org attend « Série A », pas `serie-a`.
+
+### Le reste
+
+- **Tableau des levées** sous la fiche startup (date, tour, montant,
+  investisseurs, source) — la forme lisible de « Meilleures levées de fonds ».
+  Un tour sans montant reste une ligne (« Non communiqué ») : le supprimer
+  ferait croire que l'entreprise a levé moins souvent qu'en réalité.
+- **Lien officiel** des textes juridiques enfin affiché, en `nofollow`, ainsi que
+  la date de vérification du statut — ce qui rend la fiche fiable.
+- `TOURS` sorti de `collections/Startups.ts` vers `lib/entity-vocab.ts` : dès
+  qu'une valeur est rendue côté lecteur, la raison d'être de ce fichier
+  s'applique à elle.
+- **« À lire aussi » classé par entités partagées** d'abord, puis dossier, puis
+  rubrique, puis récence. Quelqu'un qui termine un papier sur la loi 09-08 veut
+  les autres papiers sur 09-08, pas la suite d'« Actus juridique ».
 
 ---
 
-## 3. ➜ CE QUI RESTE — reprendre ici
+## 3. Ce qui a été vérifié, et comment
 
-Le Lot 3 est terminé. Les candidats, dans l'ordre du plan :
+`pnpm build` → 112 routes prérendues, **0 clé `/ar` non encodée** (contrôle du
+manifeste refait). Smoke `next start` : 19 URL, 0 échec.
 
-- **Lot 4 — Hubs d'entités.** Une bonne partie est déjà debout (les sept routes
-  existent, `getEntity` est branché sur Payload, la liste d'articles est bien
-  dérivée des relations). **Reste à écrire** : le JSON-LD par type
-  (`Organization`, `Person`, `Legislation` / `CreativeWork`, `CollectionPage` +
-  `ItemList`) et le bloc « À lire aussi » sur l'article. Commencer par relire
-  les pages de hub pour établir ce qui manque réellement.
+JSON-LD **parsé** (pas grepé) sur 8 pages de hub — `Organization`,
+`Legislation`, `Person`, `CollectionPage`, `ItemList` tous présents là où ils
+doivent l'être, `mainEntity` pointant bien sur l'entité, `isAccessibleForFree:
+true` partout (règle d'or #1). Tableau des levées rendu en FR **et** en AR,
+2 lignes, liens de source présents ; aucune propriété `left`/`right` physique
+dans la feuille du hub (règle d'or #3).
+
+Les liaisons du seed ont été croisées pour que les hubs affichent réellement
+plusieurs articles : 2 sur startup, entreprise et loi 09-08. Sans cela chaque
+hub n'en montrait qu'un et la règle de classement n'était jamais exercée.
+
+Le classement « À lire aussi » a été prouvé avec un **article de contrôle
+jetable** — même rubrique que la référence, aucune entité — créé avant la
+première requête (`loadRows` est mémoïsé par processus, une ligne créée après
+la première lecture serait invisible), puis supprimé :
+
+```
+0. shared=1 rubrique=SAME  Plateformes numeriques ...
+1. shared=1 rubrique=diff  Legaltech ...          <- entite, rubrique differente
+2. shared=0 rubrique=SAME  ZZTEST controle        <- rubrique seule, apres
+3. shared=0 rubrique=diff  Levees de fonds ...
+ENTITY BEATS RUBRIQUE : true · teardown : 0 ligne restante
+```
+
+---
+
+## 4. ➜ CE QUI RESTE — reprendre ici
+
 - **Lot 6 — Newsletter et compte gratuit.** `NewsletterForm` existe côté UI ;
   la Server Action, `lib/brevo.ts` et l'ouverture de `Abonnes.access.create`
   (aujourd'hui `isAdmin`, fermé exprès) restent à faire. Ouvrir l'accès **en
   même temps** que le formulaire, avec son rate limiting.
 - **Lot 7 — SEO.** `app/sitemap.ts` et `app/news-sitemap/` n'existent pas
   encore ; tant qu'ils n'existent pas, `ROOT_PATHS` dans `lib/revalidate.ts`
-  reste un tableau vide et un article publié n'entre pas dans le sitemap
-  Google News (voir §4).
+  reste vide et un article publié n'entre pas dans le sitemap Google News. À
+  faire au passage : rattacher `WebSite` et le `NewsArticle` des articles au
+  `PUBLISHER_ID` de `lib/jsonld.ts` (§2), et passer la skill `seo-audit`.
+- **Lot 5 — Podcast.** Il ne reste que le choix de l'hébergeur audio et le flux
+  RSS : la page, les notes, la transcription et le lecteur embarqué sont faits.
 
 ---
 
-## 4. Rappels encore ouverts
+## 5. Rappels encore ouverts
 
-- **`components/DemoBanner`** est toujours monté dans le layout. `lib/demo` a
-  disparu, mais les articles du seed sont encore en base : le bandeau reste
-  donc vrai. **À retirer à la passation du Lot 8**, quand les articles de la
-  rédaction auront remplacé le seed — et pas avant, un journal qui affiche des
-  titres fabriqués sans marqueur étant le seul échec que ce projet ne peut pas
-  se permettre. Le commentaire du layout le dit.
+- **Deux textes de démonstration codés en dur** deviendront faux le jour où la
+  rédaction saisira du vrai contenu : `components/DemoBanner`, monté dans le
+  layout, et le « Fiche de démonstration : les informations ci-dessus sont
+  fictives » du panneau d'identité (`components/EntityHub`). Les deux restent
+  vrais tant que le seed est en base. **À retirer ensemble à la passation du
+  Lot 8**, et pas avant — un journal qui affiche des titres fabriqués sans
+  marqueur est le seul échec que ce projet ne peut pas se permettre.
 - `ROOT_PATHS` dans `lib/revalidate.ts` : tableau vide en attendant le Lot 7.
-- `NEXT_PUBLIC_SERVER_URL` vaut toujours `http://localhost:3000`. À changer à
-  l'hébergement : c'est la base des canonicals, du sitemap et des aperçus.
+- `NEXT_PUBLIC_SERVER_URL` : à changer à l'hébergement — base des canonicals, du
+  sitemap, des aperçus **et de tous les `@id` du JSON-LD**.
 - Pas d'adaptateur e-mail : pas de « mot de passe oublié » (`BACK-OFFICE.md` §10).
-- Les libellés arabes de `lib/entity-vocab.ts` et les gabarits des deux pages
-  juridiques du seed sont des premiers jets : à faire valider par le client
-  avant le lancement.
+- Les libellés arabes de `lib/entity-vocab.ts` (y compris les nouveaux `TOURS`)
+  et les gabarits des deux pages juridiques du seed sont des premiers jets : à
+  faire valider par le client avant le lancement.
+- Les dates de publication au BO des deux textes du seed sont **volontairement
+  vides** : mettre une référence officielle approximative sur un site
+  d'information juridique est pire que ne rien mettre. C'est à la rédaction de
+  les saisir.
 
 ---
 
-## 5. Pièges de l'outillage (les pièges produit sont dans `CLAUDE.md` §9)
+## 6. Pièges de l'outillage (les pièges produit sont dans `CLAUDE.md` §9)
 
 - **Un `next dev` / `next start` orphelin fausse tout.**
   `Get-NetTCPConnection -LocalPort 3000 -State Listen` en PowerShell.
   ⚠️ `netstat | grep "LISTENING.*:3000"` ne marche PAS : netstat imprime l'état
   APRÈS l'adresse.
-- **`pnpm build` peut échouer sur un hoquet Atlas** — `payloadInitError: true`,
-  `Failed to collect page data for …`. Relancer avant de chercher.
-- **`slugify` normalise l'arabe** (ة → ه) : relire le slug **réellement stocké**
-  dans la réponse plutôt que l'orthographe postée.
+- **`pnpm build` peut échouer sur un hoquet Atlas** — `payloadInitError: true`.
+  Relancer avant de chercher.
+- **`loadRows` / `loadDocs` sont mémoïsés par processus** (`cache` de React).
+  Dans un script de vérification, créer les lignes **avant** la première requête,
+  sinon la deuxième lecture rend la première, périmée.
+- **`slugify` normalise l'arabe** (ة → ه) : relire le slug réellement stocké.
 - **`grep` sur du texte accentué est peu fiable dans Git Bash ici.** Utiliser un
-  marqueur ASCII (`ZZTEST`) pour toute vérification automatisée.
+  marqueur ASCII (`ZZTEST`). Pour le JSON-LD, ne pas grepper du tout : parser.
 - **Les heredocs Bash cassent sur ce contenu** (apostrophes, guillemets
   français, arabe) : écrire le script de patch dans un fichier et l'exécuter.
-  Vérifié encore cette session — un `<<'PY'` contenant du français a échoué.
 - **Un PDF de test doit être structurellement valide** (table `xref` comprise) :
-  Payload vérifie le fichier et refuse un fragment bricolé avec
-  `Invalid PDF file.`
+  Payload refuse un fragment bricolé avec `Invalid PDF file.`

@@ -12,6 +12,8 @@ import { articleCount } from '@/lib/plural'
 import { Breadcrumbs } from '@/components/Breadcrumbs/Breadcrumbs'
 import { PageHeader } from '@/components/PageHeader/PageHeader'
 import { ArticleGrid } from '@/components/ArticleGrid/ArticleGrid'
+import { JsonLd } from '@/components/JsonLd/JsonLd'
+import { articleListJsonLd } from '@/lib/jsonld'
 
 export async function generateStaticParams() {
   return await tagParams()
@@ -76,6 +78,16 @@ export default async function TagPage({ params }: { params: Params }) {
 
   return (
     <main id="contenu" className="container">
+      {/* Everything filed under one keyword — CollectionPage + ItemList. */}
+      <JsonLd
+        data={articleListJsonLd({
+          url: absolute(links.tag(locale, slug)),
+          name: tag.label,
+          locale,
+          articles,
+        })}
+      />
+
       <Breadcrumbs
         items={[
           { label: locale === 'fr' ? 'Accueil' : 'الرئيسية', href: links.home(locale) },

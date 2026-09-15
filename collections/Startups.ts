@@ -3,7 +3,7 @@ import { publicRead, isEditorial, canCreateContent } from '../lib/payload-access
 import { revalidationHooks } from '../lib/revalidate'
 import { slugField } from '../fields/slugField'
 import { seoField } from '../fields/seoField'
-import { SECTEURS, STADES, toPayloadOptions } from '../lib/entity-vocab'
+import { SECTEURS, STADES, TOURS, toPayloadOptions } from '../lib/entity-vocab'
 
 /**
  * Entity hub — the SEO moat (/CLAUDE.md §5, plan Lot 4).
@@ -128,16 +128,7 @@ export const Startups: CollectionConfig = {
               type: 'select',
               required: true,
               label: { fr: 'Tour', ar: 'الجولة' },
-              options: [
-                { label: 'Pre-seed', value: 'pre-seed' },
-                { label: 'Seed', value: 'seed' },
-                { label: 'Série A', value: 'serie-a' },
-                { label: 'Série B', value: 'serie-b' },
-                { label: 'Série C et +', value: 'serie-c-plus' },
-                { label: { fr: 'Dette', ar: 'دين' }, value: 'dette' },
-                { label: { fr: 'Subvention', ar: 'منحة' }, value: 'subvention' },
-                { label: { fr: 'Non communiqué', ar: 'غير معلن' }, value: 'nc' },
-              ],
+              options: toPayloadOptions(TOURS),
             },
           ],
         },

@@ -1,8 +1,11 @@
 import Image from 'next/image'
-import type { Entity, EntityKind, EntitySummary } from '@/lib/content-types'
+import type { Entity, EntityKind, EntitySummary, Levee } from '@/lib/content-types'
 import { ENTITY_LABELS } from '@/lib/content-types'
+import { LEVEE_LABELS, TOURS, vocabLabel } from '@/lib/entity-vocab'
 import { resolveMedia } from '@/lib/media'
+import { formatDate } from '@/lib/format'
 import { absolute } from '@/lib/site'
+import { entityHubJsonLd, entityIndexJsonLd } from '@/lib/jsonld'
 import type { Locale } from '@/lib/rubriques'
 import * as links from '@/lib/links'
 import { Breadcrumbs } from '@/components/Breadcrumbs/Breadcrumbs'
@@ -11,6 +14,7 @@ import { SubNav } from '@/components/SubNav/SubNav'
 import { EntityCard } from '@/components/EntityCard/EntityCard'
 import { ArticleGrid } from '@/components/ArticleGrid/ArticleGrid'
 import { DownloadButton } from '@/components/DownloadList/DownloadList'
+import { JsonLd } from '@/components/JsonLd/JsonLd'
 import styles from './EntityHub.module.css'
 
 /**
@@ -53,6 +57,79 @@ function hubNav(kind: EntityKind, locale: Locale) {
   }))
 }
 
+/**
+ * « Meilleures levées de fonds » is one of the client's own sous-rubriques
+ * (CLAUDE.md §7), so a startup's funding history is editorial material, not a
+ * footnote: the identity panel shows the latest round, this shows the record.
+ *
+ * A round with no amount is still a row — « Non communiqué » is information,
+ * and dropping the line would make the company look like it raised less often
+ * than it did. The source link is what makes an amount publishable at all
+ * (collections/Startups.ts), so it is rendered whenever it exists.
+ */
+function LeveeTable({ levees, locale }: { levees: readonly Levee[]; locale: Locale }) {
+  const l = (key: keyof typeof LEVEE_LABELS) => LEVEE_LABELS[key][locale]
+
+  return (
+    <section className={styles.levees} aria-labelledby="levees-titre">
+      <h2 className={styles.articlesTitle} id="levees-titre">
+        {l('titre')}
+      </h2>
+
+      {/* Tables are the one thing allowed to scroll sideways on a phone. */}
+      <div className={styles.leveesScroll}>
+        <table className={styles.leveesTable}>
+          <thead>
+            <tr>
+              <th scope="col">{l('date')}</th>
+              <th scope="col">{l('tour')}</th>
+              <th scope="col">{l('montant')}</th>
+              <th scope="col">{l('investisseurs')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {levees.map((levee, index) => (
+              <tr key={`${levee.date ?? ''}-${levee.tour ?? ''}-${index}`}>
+                <td>
+                  {levee.date ? (
+                    <time dateTime={levee.date}>{formatDate(levee.date, locale)}</time>
+                  ) : (
+                    '—'
+                  )}
+                </td>
+                <td>{vocabLabel(TOURS, levee.tour, locale) ?? '—'}</td>
+                <td>
+                  {levee.montant !== undefined
+                    ? `${levee.montant.toLocaleString(locale === 'ar' ? 'ar-MA' : 'fr-MA')}${
+                        levee.devise ? ` ${levee.devise}` : ''
+                      }`
+                    : l('nonCommunique')}
+                </td>
+                <td>
+                  {levee.investisseurs ?? '—'}
+                  {levee.source ? (
+                    <>
+                      {' '}
+                      <a
+                        className={styles.leveeSource}
+                        href={levee.source}
+                        rel="nofollow noopener"
+                        target="_blank"
+                      >
+                        {l('source')}
+                      </a>
+                    </>
+                  ) : null}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  )
+}
+
 const home = (locale: Locale) => ({
   label: locale === 'fr' ? 'Accueil' : 'الرئيسية',
   href: links.home(locale),
@@ -76,6 +153,10 @@ export function EntityIndexView({
 }) {
   return (
     <main id="contenu" className="container">
+      {/* CollectionPage + ItemList: the index is a LIST of fiches, and saying so
+          is what lets a crawler follow it into the hubs. */}
+      <JsonLd data={entityIndexJsonLd(kind, entities, locale, HUB_INTRO[kind][locale])} />
+
       <Breadcrumbs
         items={[home(locale), { label: ENTITY_LABELS[kind][locale] }]}
         locale={locale}
@@ -132,8 +213,15 @@ export function EntityDetailView({
     locale,
   )
 
+  const levees = entity.data.kind === 'startups' ? entity.data.levees : []
+
   return (
     <main id="contenu" className="container">
+      {/* Organization · Person · Legislation, plus the derived article list.
+          `mainEntity` is what says this page is ABOUT the thing rather than one
+          that merely mentions it — the distinction the hubs exist to make. */}
+      <JsonLd data={entityHubJsonLd(entity, locale)} />
+
       <Breadcrumbs
         items={[
           home(locale),
@@ -156,6 +244,8 @@ export function EntityDetailView({
       <div className="split page-body">
         <div>
           <p className={styles.summary}>{entity.summary}</p>
+
+          {levees.length > 0 ? <LeveeTable levees={levees} locale={locale} /> : null}
 
           <h2 className={styles.articlesTitle}>
             {locale === 'fr' ? 'Nos articles' : 'مقالاتنا'}
@@ -184,7 +274,23 @@ export function EntityDetailView({
             {entity.facts.map((fact) => (
               <div key={fact.label} className={styles.fact}>
                 <dt className={styles.factLabel}>{fact.label}</dt>
-                <dd className={styles.factValue}>{fact.value}</dd>
+                <dd className={styles.factValue}>
+                  {fact.href ? (
+                    // `nofollow` on an outbound link a source controls: the site
+                    // web of a startup and the SGG's copy of a law are useful to
+                    // the reader, not endorsements to hand a crawler.
+                    <a
+                      className={styles.factLink}
+                      href={fact.href}
+                      rel="nofollow noopener"
+                      target="_blank"
+                    >
+                      {fact.value}
+                    </a>
+                  ) : (
+                    fact.value
+                  )}
+                </dd>
               </div>
             ))}
           </dl>

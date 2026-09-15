@@ -70,6 +70,24 @@ export const STADES: readonly VocabOption[] = [
   { value: 'cessee', label: { fr: 'Cessée', ar: 'متوقفة' } },
 ]
 
+/**
+ * The funding rounds. These lived inline in `collections/Startups.ts` until the
+ * hub had to PRINT them: « Meilleures levées de fonds » is a client rubrique
+ * (CLAUDE.md §7), so the tour is reader-facing text, not just an admin dropdown
+ * — and the moment a value is rendered on the public site, this file's whole
+ * reason for existing applies to it.
+ */
+export const TOURS: readonly VocabOption[] = [
+  { value: 'pre-seed', label: { fr: 'Pre-seed', ar: 'ما قبل البذرة' } },
+  { value: 'seed', label: { fr: 'Seed', ar: 'بذرة' } },
+  { value: 'serie-a', label: { fr: 'Série A', ar: 'السلسلة أ' } },
+  { value: 'serie-b', label: { fr: 'Série B', ar: 'السلسلة ب' } },
+  { value: 'serie-c-plus', label: { fr: 'Série C et +', ar: 'السلسلة ج فما فوق' } },
+  { value: 'dette', label: { fr: 'Dette', ar: 'دين' } },
+  { value: 'subvention', label: { fr: 'Subvention', ar: 'منحة' } },
+  { value: 'nc', label: { fr: 'Non communiqué', ar: 'غير معلن' } },
+]
+
 /* --------------------------------------------------------------- entreprises */
 
 export const NATURES: readonly VocabOption[] = [
@@ -128,4 +146,19 @@ export const FACT_LABELS = {
   numeroBO: { fr: 'Numéro du BO', ar: 'عدد الجريدة الرسمية' },
   fondateurs: { fr: 'Fondateurs', ar: 'المؤسسون' },
   derniereLevee: { fr: 'Dernière levée', ar: 'آخر جولة تمويل' },
+  dateStatut: { fr: 'Statut vérifié le', ar: 'تم التحقق من الوضعية في' },
+  lienOfficiel: { fr: 'Texte officiel', ar: 'النص الرسمي' },
+} as const satisfies Record<string, Localized>
+
+/* --------------------------------------------- « Meilleures levées de fonds » */
+
+/** Column headings of the funding table on a startup hub. */
+export const LEVEE_LABELS = {
+  titre: { fr: 'Levées de fonds', ar: 'جولات التمويل' },
+  date: { fr: 'Date', ar: 'التاريخ' },
+  tour: { fr: 'Tour', ar: 'الجولة' },
+  montant: { fr: 'Montant', ar: 'المبلغ' },
+  investisseurs: { fr: 'Investisseurs', ar: 'المستثمرون' },
+  source: { fr: 'Source', ar: 'المصدر' },
+  nonCommunique: { fr: 'Non communiqué', ar: 'غير معلن' },
 } as const satisfies Record<string, Localized>

@@ -15,6 +15,7 @@ import { Breadcrumbs } from '@/components/Breadcrumbs/Breadcrumbs'
 import { Prose } from '@/components/Prose/Prose'
 import { PodcastCard } from '@/components/PodcastCard/PodcastCard'
 import { SectionHeading } from '@/components/SectionHeading/SectionHeading'
+import { JsonLd } from '@/components/JsonLd/JsonLd'
 import styles from './page.module.css'
 
 export async function generateStaticParams() {
@@ -181,25 +182,23 @@ export default async function PodcastEpisodePage({ params }: { params: Params })
         </section>
       ) : null}
 
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'PodcastEpisode',
-            name: episode.title,
-            description: episode.excerpt,
-            episodeNumber: episode.episode,
-            timeRequired: episode.duration ? `PT${episode.duration}M` : undefined,
-            associatedMedia: episode.embedUrl
-              ? { '@type': 'MediaObject', embedUrl: episode.embedUrl }
-              : undefined,
-            datePublished: episode.publishedAt,
-            inLanguage: locale,
-            partOfSeries: { '@type': 'PodcastSeries', name: `${SITE_NAME} — Podcast` },
-          }),
+      <JsonLd
+        data={{
+          '@context': 'https://schema.org',
+          '@type': 'PodcastEpisode',
+          name: episode.title,
+          description: episode.excerpt,
+          episodeNumber: episode.episode,
+          timeRequired: episode.duration ? `PT${episode.duration}M` : undefined,
+          associatedMedia: episode.embedUrl
+            ? { '@type': 'MediaObject', embedUrl: episode.embedUrl }
+            : undefined,
+          datePublished: episode.publishedAt,
+          inLanguage: locale,
+          partOfSeries: { '@type': 'PodcastSeries', name: `${SITE_NAME} — Podcast` },
         }}
       />
+
     </main>
   )
 }

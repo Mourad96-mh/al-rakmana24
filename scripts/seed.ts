@@ -426,7 +426,13 @@ async function seed(payload: Payload): Promise<void> {
         aLaUne: true,
         _status: 'published',
         auteurs: [redaction],
-        textesJuridiques: [loi4320],
+        /**
+         * DEUX textes, et c'est deliberé : ce sont ces recoupements qui font
+         * vivre les hubs et qui alimentent « À lire aussi » (Lot 4). Avec une
+         * seule entité par article, chaque hub n'afficherait qu'un article et
+         * le classement par entités partagées ne serait jamais exercé.
+         */
+        textesJuridiques: [loi4320, loi0908],
         tags: [tagIds.regulation],
       },
       fr: {
@@ -534,6 +540,10 @@ async function seed(payload: Payload): Promise<void> {
         accessLevel: 'public',
         _status: 'published',
         auteurs: [chroniqueur],
+        // Recoupe « levées de fonds » (la startup) et « données personnelles »
+        // (l'organisme) — voir la note sur l'article « plateformes » plus haut.
+        startups: [startup],
+        entreprises: [entreprise],
         tags: [tagIds.regulation],
       },
       fr: {

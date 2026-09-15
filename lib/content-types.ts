@@ -298,7 +298,72 @@ export const ENTITY_LABELS: Record<EntityKind, Record<Locale, string>> = {
 export interface EntityFact {
   label: string
   value: string
+  /** Renders as a link when the value is a URL the reader should be able to open. */
+  href?: string
 }
+
+/** One announced funding round. « Meilleures levées de fonds » is built on these. */
+export interface Levee {
+  /** ISO date of the announcement. */
+  date?: string
+  /** Vocabulary VALUE (`serie-a`), not a label — see lib/entity-vocab TOURS. */
+  tour?: string
+  montant?: number
+  devise?: string
+  investisseurs?: string
+  /** « Un montant sans source ne se publie pas » (collections/Startups.ts). */
+  source?: string
+}
+
+/**
+ * The entity's identity as DATA, before it is turned into display strings.
+ *
+ * `facts` above is this same information formatted for a human, in one locale,
+ * with the vocabularies resolved to labels. This is the machine-readable twin:
+ * raw vocabulary values and ISO dates, which is what schema.org wants
+ * (`foundingDate`, `legislationIdentifier`…) and what a label would destroy.
+ *
+ * Both are derived from this one object in `lib/queries.ts`, so a renamed CMS
+ * field cannot make the panel and the JSON-LD disagree.
+ */
+export type EntityData =
+  | {
+      kind: 'startups'
+      secteur?: string
+      stade?: string
+      anneeCreation?: number
+      ville?: string
+      siteWeb?: string
+      fondateurs: readonly string[]
+      /** Newest first. */
+      levees: readonly Levee[]
+    }
+  | {
+      kind: 'entreprises'
+      nature?: string
+      secteur?: string
+      siege?: string
+      siteWeb?: string
+    }
+  | {
+      kind: 'personnalites'
+      fonction?: string
+      nationalite?: string
+      organisations: readonly string[]
+      linkedin?: string
+      x?: string
+    }
+  | {
+      kind: 'textes-juridiques'
+      reference?: string
+      typeTexte?: string
+      statut?: string
+      dateStatut?: string
+      datePublicationBO?: string
+      numeroBO?: string
+      /** The text on the SGG / Bulletin officiel site — `sameAs` in JSON-LD. */
+      lienOfficiel?: string
+    }
 
 export interface EntitySummary {
   id: string
@@ -317,7 +382,10 @@ export interface EntitySummary {
 
 export interface Entity extends EntitySummary {
   summary: string
+  /** Display rows for the identity panel — derived from `data`. */
   facts: readonly EntityFact[]
+  /** The same identity as machine-readable data, for the JSON-LD. */
+  data: EntityData
   /** Populated from article relationships — never hand-curated (CLAUDE.md §5). */
   articles: readonly ArticleSummary[]
 }

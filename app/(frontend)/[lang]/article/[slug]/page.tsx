@@ -16,6 +16,7 @@ import { SITE_NAME, absolute, languageAlternates } from '@/lib/site'
 import { Breadcrumbs, type Crumb } from '@/components/Breadcrumbs/Breadcrumbs'
 import { Prose } from '@/components/Prose/Prose'
 import { ArticleCard } from '@/components/ArticleCard/ArticleCard'
+import { JsonLd } from '@/components/JsonLd/JsonLd'
 import { SectionHeading } from '@/components/SectionHeading/SectionHeading'
 import { AdRail } from '@/components/AdSlot/AdSlot'
 import styles from './page.module.css'
@@ -257,10 +258,7 @@ export default async function ArticlePage({ params }: { params: Params }) {
         <p className="visually-hidden">{tList('empty')}</p>
       )}
 
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <JsonLd data={jsonLd} />
     </main>
   )
 }

@@ -108,18 +108,23 @@ Objectif : accueil, rubriques, sous-rubriques, article — en FR et en AR.
 
 ---
 
-## Lot 4 — Hubs d'entités ⬜
+## Lot 4 — Hubs d'entités ✅ (fait & vérifié)
 
 Le différenciateur SEO. Personne au Maroc ne fait ça sur le créneau droit du numérique / startups.
 
-- [ ] `/startups/[slug]` `/entreprises/[slug]` `/textes-juridiques/[slug]` `/personnalites/[slug]` `/dossiers/[slug]` `/auteurs/[slug]` `/tags/[slug]`.
-- [ ] Chaque hub = fiche (description, métadonnées, liens) + **liste auto-alimentée par les relations** des articles. Jamais de curation manuelle.
-- [ ] `TextesJuridiques` : champs spécifiques (référence du texte, date de publication au BO, statut : en vigueur / projet / abrogé, lien officiel).
-- [ ] `Startups` : secteur, année de création, stade, levées (montant, tour, date, investisseurs) → alimente « Meilleures levées de fonds ».
-- [ ] JSON-LD par type : `Organization` (startups/entreprises), `Person` (personnalités), `Legislation` ou `CreativeWork` (textes), `CollectionPage` + `ItemList` pour les listes.
-- [ ] Blocs « À lire aussi » sur l'article, tirés des mêmes relations.
+> **Fait & vérifié** : `lint` ✓ `tsc` ✓ `build` ✓ (112 routes prérendues, clés `/ar`
+> toutes pourcent-encodées) · smoke `next start` ✓ · JSON-LD parsé et contrôlé sur
+> 8 pages de hub, 0 échec. Les listes dérivées sont réellement alimentées : 2
+> articles sur les hubs startup, entreprise et loi 09-08.
 
-**Vert quand** : créer un article lié à une startup fait apparaître l'article sur le hub sans aucune autre action ; `generateStaticParams` couvre les deux locales ; `lint` ✓ `build` ✓.
+- [x] `/startups/[slug]` `/entreprises/[slug]` `/textes-juridiques/[slug]` `/personnalites/[slug]` `/dossiers/[slug]` `/auteurs/[slug]` `/tags/[slug]`.
+- [x] Chaque hub = fiche (description, métadonnées, liens) + **liste auto-alimentée par les relations** des articles. Jamais de curation manuelle.
+- [x] `TextesJuridiques` : référence, type, statut, **date de vérification du statut**, publication au BO, numéro du BO et **lien officiel** — tous affichés, le lien officiel en `nofollow`.
+- [x] `Startups` : secteur, année, stade, ville → panneau d'identité ; **tableau complet des levées** (date, tour, montant, investisseurs, source) sous la fiche — la forme lisible de « Meilleures levées de fonds ».
+- [x] JSON-LD par type : `Organization` (startups/entreprises), `Person` (personnalités), `Legislation` (textes), `CollectionPage` + `ItemList` pour les listes et les index. Un seul `@graph` par page, `mainEntity` pointant sur l'entité.
+- [x] « À lire aussi » **classé par entités partagées** d'abord, puis dossier, puis rubrique.
+
+**Vert quand** *(atteint)* : créer un article lié à une startup fait apparaître l'article sur le hub sans aucune autre action ; `generateStaticParams` couvre les deux locales ; `lint` ✓ `build` ✓.
 
 ---
 

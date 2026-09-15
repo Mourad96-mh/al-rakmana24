@@ -90,6 +90,59 @@
   font-weight: 600;
 }
 
+.factLink {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  /* A site web or a BO reference can be long and has no spaces to break on. */
+  overflow-wrap: anywhere;
+}
+
+/* ------------------------------------------ « Meilleures levees de fonds » */
+
+.levees {
+  margin-block: var(--space-l) var(--space-xl);
+}
+
+/* Tables are the one element allowed to scroll sideways (CLAUDE.md, responsive). */
+.leveesScroll {
+  overflow-x: auto;
+}
+
+.leveesTable {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-size: var(--step--1);
+}
+
+.leveesTable th,
+.leveesTable td {
+  padding: var(--space-2xs) var(--space-xs);
+  border-block-end: 1px solid var(--border);
+  /* Logical, not `left`: the table mirrors itself on /ar (regle d'or #3). */
+  text-align: start;
+  vertical-align: top;
+}
+
+.leveesTable th {
+  border-block-end: 2px solid var(--rule);
+  color: var(--ink-faint);
+  font-size: var(--step--1);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.leveesTable td:nth-child(3) {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.leveeSource {
+  color: var(--accent);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 .disclaimer {
   margin: var(--space-m) 0 0;
   padding-block-start: var(--space-2xs);

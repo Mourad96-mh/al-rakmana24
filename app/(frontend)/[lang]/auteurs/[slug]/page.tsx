@@ -13,6 +13,8 @@ import * as links from '@/lib/links'
 import { articleCount } from '@/lib/plural'
 import { Breadcrumbs } from '@/components/Breadcrumbs/Breadcrumbs'
 import { ArticleGrid } from '@/components/ArticleGrid/ArticleGrid'
+import { JsonLd } from '@/components/JsonLd/JsonLd'
+import { articleListJsonLd } from '@/lib/jsonld'
 import styles from './page.module.css'
 
 export async function generateStaticParams() {
@@ -77,6 +79,27 @@ export default async function AuthorPage({ params }: { params: Params }) {
 
   return (
     <main id="contenu" className="container">
+      {/* A byline and everything it signed — CollectionPage + ItemList. */}
+      <JsonLd
+        data={articleListJsonLd({
+          url: absolute(links.auteur(locale, slug)),
+          name: author.name,
+          description: author.bio,
+          locale,
+          articles: author.articles,
+          // `about` a Person: this is what connects a byline to the articles it
+          // signs, which is the whole reason `Auteurs` is a collection and not
+          // a free-text field (CLAUDE.md §6).
+          about: {
+            '@type': 'Person',
+            name: author.name,
+            jobTitle: author.role || undefined,
+            description: author.bio || undefined,
+            url: absolute(links.auteur(locale, slug)),
+          },
+        })}
+      />
+
       <Breadcrumbs
         items={[
           { label: locale === 'fr' ? 'Accueil' : 'الرئيسية', href: links.home(locale) },

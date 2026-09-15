@@ -13,6 +13,8 @@ import * as links from '@/lib/links'
 import { Breadcrumbs } from '@/components/Breadcrumbs/Breadcrumbs'
 import { PageHeader } from '@/components/PageHeader/PageHeader'
 import { ArticleGrid } from '@/components/ArticleGrid/ArticleGrid'
+import { JsonLd } from '@/components/JsonLd/JsonLd'
+import { articleListJsonLd } from '@/lib/jsonld'
 import styles from './page.module.css'
 
 export async function generateStaticParams() {
@@ -77,6 +79,17 @@ export default async function DossierPage({ params }: { params: Params }) {
 
   return (
     <main id="contenu" className="container">
+      {/* A dossier is a curated LIST of articles — CollectionPage + ItemList. */}
+      <JsonLd
+        data={articleListJsonLd({
+          url: absolute(links.dossier(locale, slug)),
+          name: dossier.title,
+          description: dossier.intro,
+          locale,
+          articles: dossier.articles,
+        })}
+      />
+
       <Breadcrumbs
         items={[
           { label: locale === 'fr' ? 'Accueil' : 'الرئيسية', href: links.home(locale) },

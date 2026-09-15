@@ -13,9 +13,11 @@ import type {
   DownloadFile,
   Entity,
   EntityFact,
+  EntityData,
   EntityKind,
   EntityRef,
   EntitySummary,
+  Levee,
   ImageInput,
   PodcastEpisode,
   PodcastSummary,
@@ -32,6 +34,7 @@ import {
   SECTEURS,
   STADES,
   STATUTS,
+  TOURS,
   TYPES_TEXTE,
   vocabLabel,
 } from './entity-vocab'
@@ -418,11 +421,25 @@ export async function getArticle(locale: Locale, slug: string): Promise<Article 
 }
 
 /**
- * « À lire aussi ».
+ * « À lire aussi », ranked by the SAME relationships that build the hubs.
  *
- * Same dossier first, then same rubrique, then anything recent — the article's
- * own relationships are a better signal than its rubrique, and its rubrique is
- * a better signal than the calendar.
+ * The order of preference, best first:
+ *
+ *   1. the most shared ENTITIES — two articles that both name the same startup,
+ *      the same law or the same person are about the same story, whatever
+ *      rubrique an editor happened to file them under;
+ *   2. the same dossier — an explicit editorial grouping;
+ *   3. the same rubrique;
+ *   4. anything recent.
+ *
+ * Entities come first because they are the finest signal the model has and the
+ * one a reader is actually following: someone finishing a piece on « loi 09-08 »
+ * wants the other pieces on 09-08, not the next item in « Actus juridique ».
+ * It is also the property that makes the entity graph pay for itself twice —
+ * once for the crawler on the hubs, once for the reader here (CLAUDE.md §5).
+ *
+ * Ties keep the pool's own order, which is `publishedAt` descending, so equally
+ * related articles arrive newest first.
  */
 export async function getRelated(
   locale: Locale,
@@ -432,16 +449,29 @@ export async function getRelated(
   const rows = await loadRows(locale)
   const pool = rows.filter((row) => row.summary.slug !== article.slug)
 
+  /** `kind:slug` — a startup and a tag may share a slug without being the same thing. */
+  const keyOf = (ref: EntityRef) => `${ref.kind}:${ref.slug}`
+  const mine = new Set(article.entities.map(keyOf))
+
+  const shared = (row: Row): number =>
+    mine.size === 0 ? 0 : row.entities.filter((ref) => mine.has(keyOf(ref))).length
+
+  /** Lower is better. Negative = shares entities, and more shared ranks higher. */
   const score = (row: Row): number => {
-    if (article.dossier && row.dossierSlug === article.dossier.slug) return 0
-    if (row.summary.rubrique === article.rubrique) return 1
-    return 2
+    const common = shared(row)
+    if (common > 0) return -common
+    if (article.dossier && row.dossierSlug === article.dossier.slug) return 1
+    if (row.summary.rubrique === article.rubrique) return 2
+    return 3
   }
 
   return [...pool]
-    .sort((a, b) => score(a) - score(b))
+    .map((row, index) => ({ row, index, score: score(row) }))
+    // `sort` is stable in modern V8, but the index keeps that guarantee explicit
+    // rather than inherited — the tie-break IS the editorial rule above.
+    .sort((a, b) => a.score - b.score || a.index - b.index)
     .slice(0, limit)
-    .map((row) => row.summary)
+    .map(({ row }) => row.summary)
 }
 
 /**
@@ -704,8 +734,8 @@ function fileOf(value: unknown): DownloadFile | undefined {
 }
 
 /** Push a fact only when there is something to say. Empty rows read as bugs. */
-function addFact(facts: EntityFact[], label: string, value?: string): void {
-  if (value && value.trim().length > 0) facts.push({ label, value })
+function addFact(facts: EntityFact[], label: string, value?: string, href?: string): void {
+  if (value && value.trim().length > 0) facts.push({ label, value, href })
 }
 
 function entitySummaryOf(
@@ -748,67 +778,161 @@ function entitySummaryOf(
   }
 }
 
-/** The identity panel — the labelled rows beside the fiche. */
-function factsOf(doc: Record<string, unknown>, kind: EntityKind, locale: Locale): EntityFact[] {
-  const facts: EntityFact[] = []
-  const str = (v: unknown) => (typeof v === 'string' && v ? v : undefined)
-  const label = (key: keyof typeof FACT_LABELS) => FACT_LABELS[key][locale]
+/** A trimmed string, or nothing. Blank CMS fields must not become empty rows. */
+const str = (value: unknown): string | undefined =>
+  typeof value === 'string' && value.trim() ? value.trim() : undefined
+
+/** A date field as a plain ISO string. */
+const isoDate = (value: unknown): string | undefined => str(value)
+
+/**
+ * The entity's identity as DATA — raw vocabulary values and ISO dates.
+ *
+ * This is the single read of the Payload document. `factsOf()` below formats it
+ * for the panel and `lib/jsonld.ts` turns it into schema.org; neither touches
+ * the document again, so a renamed CMS field breaks in ONE place instead of
+ * making the visible panel and the invisible JSON-LD quietly disagree.
+ */
+function entityDataOf(
+  doc: Record<string, unknown>,
+  kind: EntityKind,
+  locale: Locale,
+): EntityData {
+  const names = (field: unknown): string[] =>
+    populated(field)
+      .map((related) => text(related.title, locale))
+      .filter((name): name is string => Boolean(name))
 
   if (kind === 'startups') {
-    addFact(facts, label('secteur'), vocabLabel(SECTEURS, doc.secteur, locale))
-    addFact(facts, label('stade'), vocabLabel(STADES, doc.stade, locale))
+    const levees: Levee[] = populated(doc.levees)
+      .map((levee) => ({
+        date: isoDate(levee.date),
+        tour: str(levee.tour),
+        montant: typeof levee.montant === 'number' ? levee.montant : undefined,
+        devise: str(levee.devise),
+        investisseurs: str(levee.investisseurs),
+        source: str(levee.source),
+      }))
+      // Newest first. A round with no date sorts last rather than disappearing:
+      // the money was raised even if the editor left the date blank.
+      .sort((a, b) => (b.date ?? '').localeCompare(a.date ?? ''))
+
+    return {
+      kind,
+      secteur: str(doc.secteur),
+      stade: str(doc.stade),
+      anneeCreation: typeof doc.anneeCreation === 'number' ? doc.anneeCreation : undefined,
+      ville: str(doc.ville),
+      siteWeb: str(doc.siteWeb),
+      fondateurs: names(doc.fondateurs),
+      levees,
+    }
+  }
+
+  if (kind === 'entreprises') {
+    return {
+      kind,
+      nature: str(doc.nature),
+      secteur: str(doc.secteur),
+      siege: str(doc.siege),
+      siteWeb: str(doc.siteWeb),
+    }
+  }
+
+  if (kind === 'personnalites') {
+    return {
+      kind,
+      fonction: text(doc.fonction, locale),
+      nationalite: text(doc.nationalite, locale),
+      organisations: names(doc.organisation),
+      linkedin: str(doc.linkedin),
+      x: str(doc.x),
+    }
+  }
+
+  return {
+    kind: 'textes-juridiques',
+    reference: str(doc.reference),
+    typeTexte: str(doc.typeTexte),
+    statut: str(doc.statut),
+    dateStatut: isoDate(doc.dateStatut),
+    datePublicationBO: isoDate(doc.datePublicationBO),
+    numeroBO: str(doc.numeroBO),
+    lienOfficiel: str(doc.lienOfficiel),
+  }
+}
+
+/** A money amount in the reader's own numerals. */
+function money(montant: number | undefined, devise: string | undefined, locale: Locale): string | undefined {
+  if (montant === undefined) return undefined
+  const formatted = montant.toLocaleString(locale === 'ar' ? 'ar-MA' : 'fr-MA')
+  return devise ? `${formatted} ${devise}` : formatted
+}
+
+/** One funding round as the single line the identity panel has room for. */
+function leveeLine(levee: Levee, locale: Locale): string | undefined {
+  const parts = [
+    vocabLabel(TOURS, levee.tour, locale),
+    money(levee.montant, levee.devise, locale),
+  ].filter(Boolean)
+  return parts.length > 0 ? parts.join(' · ') : undefined
+}
+
+/**
+ * The identity panel — the labelled rows beside the fiche.
+ *
+ * Derived from `EntityData`, never from the document: see `entityDataOf` above.
+ */
+function factsOf(data: EntityData, locale: Locale): EntityFact[] {
+  const facts: EntityFact[] = []
+  const label = (key: keyof typeof FACT_LABELS) => FACT_LABELS[key][locale]
+
+  if (data.kind === 'startups') {
+    addFact(facts, label('secteur'), vocabLabel(SECTEURS, data.secteur, locale))
+    addFact(facts, label('stade'), vocabLabel(STADES, data.stade, locale))
     addFact(
       facts,
       label('creation'),
-      typeof doc.anneeCreation === 'number' ? String(doc.anneeCreation) : undefined,
+      data.anneeCreation !== undefined ? String(data.anneeCreation) : undefined,
     )
-    addFact(facts, label('ville'), str(doc.ville))
-    addFact(facts, label('siteWeb'), str(doc.siteWeb))
-
-    const fondateurs = populated(doc.fondateurs)
-      .map((f) => text(f.title, locale))
-      .filter((n): n is string => Boolean(n))
-    addFact(facts, label('fondateurs'), fondateurs.join(', '))
+    addFact(facts, label('ville'), data.ville)
+    addFact(facts, label('siteWeb'), data.siteWeb, data.siteWeb)
+    addFact(facts, label('fondateurs'), data.fondateurs.join(', '))
 
     /**
-     * « Meilleures levées de fonds » is a client rubrique (CLAUDE.md §7), so
-     * the latest round is a headline fact, not a detail buried in an array.
+     * « Meilleures levées de fonds » is a client rubrique (CLAUDE.md §7), so the
+     * latest round is a headline fact. The full table is rendered underneath by
+     * the hub — this row is the summary, not the record.
      */
-    const levees = populated(doc.levees)
-      .filter((l) => typeof l.date === 'string')
-      .sort((a, b) => String(b.date).localeCompare(String(a.date)))
-    const last = levees[0]
-    if (last) {
-      const montant =
-        typeof last.montant === 'number'
-          ? `${last.montant.toLocaleString(locale === 'ar' ? 'ar-MA' : 'fr-MA')} ${
-              str(last.devise) ?? ''
-            }`.trim()
-          : undefined
-      addFact(facts, label('derniereLevee'), [str(last.tour), montant].filter(Boolean).join(' · '))
-    }
-  } else if (kind === 'entreprises') {
-    addFact(facts, label('nature'), vocabLabel(NATURES, doc.nature, locale))
-    addFact(facts, label('secteur'), str(doc.secteur))
-    addFact(facts, label('siege'), str(doc.siege))
-    addFact(facts, label('siteWeb'), str(doc.siteWeb))
-  } else if (kind === 'personnalites') {
-    addFact(facts, label('fonction'), text(doc.fonction, locale))
-    addFact(facts, label('nationalite'), text(doc.nationalite, locale))
-    const org = populated(doc.organisation)
-      .map((o) => text(o.title, locale))
-      .filter((n): n is string => Boolean(n))
-    addFact(facts, label('organisation'), org.join(', '))
+    const last = data.levees[0]
+    if (last) addFact(facts, label('derniereLevee'), leveeLine(last, locale))
+  } else if (data.kind === 'entreprises') {
+    addFact(facts, label('nature'), vocabLabel(NATURES, data.nature, locale))
+    addFact(facts, label('secteur'), data.secteur)
+    addFact(facts, label('siege'), data.siege)
+    addFact(facts, label('siteWeb'), data.siteWeb, data.siteWeb)
+  } else if (data.kind === 'personnalites') {
+    addFact(facts, label('fonction'), data.fonction)
+    addFact(facts, label('nationalite'), data.nationalite)
+    addFact(facts, label('organisation'), data.organisations.join(', '))
   } else {
-    addFact(facts, label('reference'), str(doc.reference))
-    addFact(facts, label('type'), vocabLabel(TYPES_TEXTE, doc.typeTexte, locale))
-    addFact(facts, label('statut'), vocabLabel(STATUTS, doc.statut, locale))
+    addFact(facts, label('reference'), data.reference)
+    addFact(facts, label('type'), vocabLabel(TYPES_TEXTE, data.typeTexte, locale))
+    addFact(facts, label('statut'), vocabLabel(STATUTS, data.statut, locale))
+    addFact(
+      facts,
+      label('dateStatut'),
+      data.dateStatut ? formatDate(data.dateStatut, locale) : undefined,
+    )
     addFact(
       facts,
       label('publicationBO'),
-      str(doc.datePublicationBO) ? formatDate(String(doc.datePublicationBO), locale) : undefined,
+      data.datePublicationBO ? formatDate(data.datePublicationBO, locale) : undefined,
     )
-    addFact(facts, label('numeroBO'), str(doc.numeroBO))
+    addFact(facts, label('numeroBO'), data.numeroBO)
+    // The text on the SGG / BO site. It is the one row a reader may want to
+    // FOLLOW rather than read, hence the href.
+    addFact(facts, label('lienOfficiel'), data.lienOfficiel, data.lienOfficiel)
   }
 
   return facts
@@ -832,12 +956,14 @@ export async function getEntity(
   if (!doc || !summary) return null
 
   const rows = await loadRows(locale)
+  const data = entityDataOf(doc, kind, locale)
 
   return {
     ...summary,
     // `description` on organisations, `bio` on people, `resume` on legal texts.
     summary: prose(doc.description ?? doc.bio ?? doc.resume, locale),
-    facts: factsOf(doc, kind, locale),
+    facts: factsOf(data, locale),
+    data,
     // DERIVED, never hand-curated — the whole point of the hub.
     articles: rows
       .filter((row) => row.entities.some((ref) => ref.kind === kind && ref.slug === slug))
