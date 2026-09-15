@@ -32,27 +32,22 @@
   max-inline-size: 52ch;
 }
 
-.newsletterCta {
+.newsletterForm {
   margin-inline-start: auto;
-  display: inline-flex;
-  align-items: center;
-  padding: var(--space-2xs) var(--space-l);
+}
+
+/* The band is red; the island's own tokens are light-on-white, so they are
+   overridden here rather than branched inside the component. */
+.newsletterInner :global(input) {
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.newsletterInner :global(button) {
   background: #ffffff;
   color: var(--brand-red-dark);
-  font-family: var(--font-body);
-  font-size: var(--step--1);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  text-decoration: none;
 }
 
-[dir='rtl'] .newsletterCta {
-  letter-spacing: normal;
-  text-transform: none;
-}
-
-.newsletterCta:hover {
+.newsletterInner :global(button):hover {
   background: var(--ink);
   color: #ffffff;
 }
@@ -62,7 +57,7 @@
 .main {
   display: grid;
   gap: var(--space-xl);
-  grid-template-columns: 1.2fr 1fr 1fr;
+  grid-template-columns: 1.2fr 1fr 1fr 1fr;
   padding-block: var(--space-xl);
 }
 
@@ -159,13 +154,19 @@
   color: #ffffff;
 }
 
+@media (max-width: 1000px) {
+  .main {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 800px) {
   .main {
     grid-template-columns: 1fr;
     gap: var(--space-l);
   }
 
-  .newsletterCta {
+  .newsletterForm {
     margin-inline-start: 0;
   }
 }

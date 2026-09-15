@@ -63,22 +63,28 @@ export type SupportedTimezones =
 
 export interface Config {
   auth: {
+    abonnes: AbonneAuthOperations;
     users: UserAuthOperations;
   };
   blocks: {};
   collections: {
     articles: Article;
     podcasts: Podcast;
+    videos: Video;
+    documents: Document;
     dossiers: Dossier;
     pages: Page;
     media: Media;
+    fichiers: Fichier;
     startups: Startup;
     entreprises: Entreprise;
     personnalites: Personnalite;
     'textes-juridiques': TextesJuridique;
     auteurs: Auteur;
     tags: Tag;
+    publicites: Publicite;
     newsletter: Newsletter;
+    abonnes: Abonne;
     users: User;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
@@ -89,16 +95,21 @@ export interface Config {
   collectionsSelect: {
     articles: ArticlesSelect<false> | ArticlesSelect<true>;
     podcasts: PodcastsSelect<false> | PodcastsSelect<true>;
+    videos: VideosSelect<false> | VideosSelect<true>;
+    documents: DocumentsSelect<false> | DocumentsSelect<true>;
     dossiers: DossiersSelect<false> | DossiersSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    fichiers: FichiersSelect<false> | FichiersSelect<true>;
     startups: StartupsSelect<false> | StartupsSelect<true>;
     entreprises: EntreprisesSelect<false> | EntreprisesSelect<true>;
     personnalites: PersonnalitesSelect<false> | PersonnalitesSelect<true>;
     'textes-juridiques': TextesJuridiquesSelect<false> | TextesJuridiquesSelect<true>;
     auteurs: AuteursSelect<false> | AuteursSelect<true>;
     tags: TagsSelect<false> | TagsSelect<true>;
+    publicites: PublicitesSelect<false> | PublicitesSelect<true>;
     newsletter: NewsletterSelect<false> | NewsletterSelect<true>;
+    abonnes: AbonnesSelect<false> | AbonnesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -106,7 +117,7 @@ export interface Config {
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
   db: {
-    defaultIDType: number;
+    defaultIDType: string;
   };
   fallbackLocale: ('false' | 'none' | 'null') | false | null | ('fr' | 'ar') | ('fr' | 'ar')[];
   globals: {};
@@ -115,10 +126,28 @@ export interface Config {
   widgets: {
     collections: CollectionsWidget;
   };
-  user: User;
+  user: Abonne | User;
   jobs: {
     tasks: unknown;
     workflows: unknown;
+  };
+}
+export interface AbonneAuthOperations {
+  forgotPassword: {
+    email: string;
+    password: string;
+  };
+  login: {
+    email: string;
+    password: string;
+  };
+  registerFirstUser: {
+    email: string;
+    password: string;
+  };
+  unlock: {
+    email: string;
+    password: string;
   };
 }
 export interface UserAuthOperations {
@@ -144,7 +173,7 @@ export interface UserAuthOperations {
  * via the `definition` "articles".
  */
 export interface Article {
-  id: number;
+  id: string;
   title: string;
   /**
    * Laisser vide : généré depuis le titre de CETTE langue. Une fois l’article en ligne, le modifier casse les liens existants.
@@ -214,21 +243,21 @@ export interface Article {
    * SANS EFFET. Le site est intégralement gratuit ; ce champ est une réserve technique.
    */
   accessLevel?: ('public' | 'metered' | 'premium') | null;
-  creePar?: (number | null) | User;
+  creePar?: (string | null) | User;
   /**
    * Commune aux deux langues. 1200 × 675 minimum — c’est aussi l’image de partage par défaut.
    */
-  coverImage?: (number | null) | Media;
+  coverImage?: (string | null) | Media;
   /**
    * Un ou plusieurs auteurs. Vide = « La rédaction ».
    */
-  auteurs?: (number | Auteur)[] | null;
-  startups?: (number | Startup)[] | null;
-  entreprises?: (number | Entreprise)[] | null;
-  personnalites?: (number | Personnalite)[] | null;
-  textesJuridiques?: (number | TextesJuridique)[] | null;
-  dossiers?: (number | Dossier)[] | null;
-  tags?: (number | Tag)[] | null;
+  auteurs?: (string | Auteur)[] | null;
+  startups?: (string | Startup)[] | null;
+  entreprises?: (string | Entreprise)[] | null;
+  personnalites?: (string | Personnalite)[] | null;
+  textesJuridiques?: (string | TextesJuridique)[] | null;
+  dossiers?: (string | Dossier)[] | null;
+  tags?: (string | Tag)[] | null;
   /**
    * Facultatif. Vide = le titre et le chapeau de l’article sont utilisés.
    */
@@ -244,7 +273,7 @@ export interface Article {
     /**
      * 1200 × 630. Vide = image de couverture, puis image par défaut du site.
      */
-    image?: (number | null) | Media;
+    image?: (string | null) | Media;
     /**
      * Retire la page des moteurs de recherche, dans cette langue uniquement.
      */
@@ -259,9 +288,9 @@ export interface Article {
  * via the `definition` "users".
  */
 export interface User {
-  id: number;
+  id: string;
   nom: string;
-  role: 'admin' | 'redacteur-en-chef' | 'journaliste' | 'contributeur' | 'abonne';
+  role: 'admin' | 'redacteur-en-chef' | 'journaliste' | 'contributeur';
   /**
    * Affichée sur la page auteur si la personne signe des articles.
    */
@@ -290,7 +319,7 @@ export interface User {
  * via the `definition` "media".
  */
 export interface Media {
-  id: number;
+  id: string;
   /**
    * Obligatoire pour l’accessibilité et le référencement. Décrire l’image, pas la légender.
    */
@@ -348,7 +377,7 @@ export interface Media {
  * via the `definition` "auteurs".
  */
 export interface Auteur {
-  id: number;
+  id: string;
   /**
    * Localisé : la version arabe porte le nom en arabe, pas une translittération automatique.
    */
@@ -359,14 +388,14 @@ export interface Auteur {
   slug?: string | null;
   fonction?: string | null;
   bio?: string | null;
-  photo?: (number | null) | Media;
+  photo?: (string | null) | Media;
   email?: string | null;
   linkedin?: string | null;
   x?: string | null;
   /**
    * Facultatif. À renseigner si cet auteur se connecte lui-même au site.
    */
-  compte?: (number | null) | User;
+  compte?: (string | null) | User;
   /**
    * Facultatif. Vide = le titre et le chapeau de l’article sont utilisés.
    */
@@ -382,7 +411,7 @@ export interface Auteur {
     /**
      * 1200 × 630. Vide = image de couverture, puis image par défaut du site.
      */
-    image?: (number | null) | Media;
+    image?: (string | null) | Media;
     /**
      * Retire la page des moteurs de recherche, dans cette langue uniquement.
      */
@@ -398,7 +427,7 @@ export interface Auteur {
  * via the `definition` "startups".
  */
 export interface Startup {
-  id: number;
+  id: string;
   title: string;
   /**
    * Laisser vide : généré depuis le titre de CETTE langue. Une fois l’article en ligne, le modifier casse les liens existants.
@@ -438,8 +467,8 @@ export interface Startup {
   anneeCreation?: number | null;
   ville?: string | null;
   siteWeb?: string | null;
-  logo?: (number | null) | Media;
-  fondateurs?: (number | Personnalite)[] | null;
+  logo?: (string | null) | Media;
+  fondateurs?: (string | Personnalite)[] | null;
   /**
    * Une ligne par tour annoncé. Montant en chiffres, sans espace ni symbole.
    */
@@ -475,7 +504,7 @@ export interface Startup {
     /**
      * 1200 × 630. Vide = image de couverture, puis image par défaut du site.
      */
-    image?: (number | null) | Media;
+    image?: (string | null) | Media;
     /**
      * Retire la page des moteurs de recherche, dans cette langue uniquement.
      */
@@ -491,7 +520,7 @@ export interface Startup {
  * via the `definition` "personnalites".
  */
 export interface Personnalite {
-  id: number;
+  id: string;
   title: string;
   /**
    * Laisser vide : généré depuis le titre de CETTE langue. Une fois l’article en ligne, le modifier casse les liens existants.
@@ -502,11 +531,11 @@ export interface Personnalite {
   organisation?:
     | ({
         relationTo: 'startups';
-        value: number | Startup;
+        value: string | Startup;
       } | null)
     | ({
         relationTo: 'entreprises';
-        value: number | Entreprise;
+        value: string | Entreprise;
       } | null);
   bio?: {
     root: {
@@ -523,7 +552,7 @@ export interface Personnalite {
     };
     [k: string]: unknown;
   } | null;
-  photo?: (number | null) | Media;
+  photo?: (string | null) | Media;
   linkedin?: string | null;
   x?: string | null;
   /**
@@ -541,7 +570,7 @@ export interface Personnalite {
     /**
      * 1200 × 630. Vide = image de couverture, puis image par défaut du site.
      */
-    image?: (number | null) | Media;
+    image?: (string | null) | Media;
     /**
      * Retire la page des moteurs de recherche, dans cette langue uniquement.
      */
@@ -555,7 +584,7 @@ export interface Personnalite {
  * via the `definition` "entreprises".
  */
 export interface Entreprise {
-  id: number;
+  id: string;
   title: string;
   /**
    * Laisser vide : généré depuis le titre de CETTE langue. Une fois l’article en ligne, le modifier casse les liens existants.
@@ -592,7 +621,7 @@ export interface Entreprise {
   secteur?: string | null;
   siege?: string | null;
   siteWeb?: string | null;
-  logo?: (number | null) | Media;
+  logo?: (string | null) | Media;
   /**
    * Facultatif. Vide = le titre et le chapeau de l’article sont utilisés.
    */
@@ -608,7 +637,7 @@ export interface Entreprise {
     /**
      * 1200 × 630. Vide = image de couverture, puis image par défaut du site.
      */
-    image?: (number | null) | Media;
+    image?: (string | null) | Media;
     /**
      * Retire la page des moteurs de recherche, dans cette langue uniquement.
      */
@@ -622,7 +651,7 @@ export interface Entreprise {
  * via the `definition` "textes-juridiques".
  */
 export interface TextesJuridique {
-  id: number;
+  id: string;
   title: string;
   /**
    * Laisser vide : généré depuis le titre de CETTE langue. Une fois l’article en ligne, le modifier casse les liens existants.
@@ -645,6 +674,10 @@ export interface TextesJuridique {
    */
   lienOfficiel?: string | null;
   /**
+   * Le texte tel que publié. La version arabe et la version française sont deux fichiers distincts.
+   */
+  fichier?: (string | null) | Fichier;
+  /**
    * Résumé de vulgarisation, pas une recopie du texte. C’est le contenu qui fait ranker la page.
    */
   resume?: {
@@ -665,7 +698,7 @@ export interface TextesJuridique {
   /**
    * Texte modifié, décret d’application, texte abrogé…
    */
-  textesLies?: (number | TextesJuridique)[] | null;
+  textesLies?: (string | TextesJuridique)[] | null;
   /**
    * Facultatif. Vide = le titre et le chapeau de l’article sont utilisés.
    */
@@ -681,7 +714,7 @@ export interface TextesJuridique {
     /**
      * 1200 × 630. Vide = image de couverture, puis image par défaut du site.
      */
-    image?: (number | null) | Media;
+    image?: (string | null) | Media;
     /**
      * Retire la page des moteurs de recherche, dans cette langue uniquement.
      */
@@ -691,13 +724,37 @@ export interface TextesJuridique {
   createdAt: string;
 }
 /**
+ * Les fichiers téléchargeables. Le titre et la description se saisissent sur la fiche qui les utilise, pas ici.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "fichiers".
+ */
+export interface Fichier {
+  id: string;
+  /**
+   * Pour la rédaction uniquement : version, provenance, date de mise à jour du fichier.
+   */
+  note?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
  * Les articles s’ajoutent depuis la fiche de l’article, pas depuis ici.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "dossiers".
  */
 export interface Dossier {
-  id: number;
+  id: string;
   title: string;
   /**
    * Laisser vide : généré depuis le titre de CETTE langue. Une fois l’article en ligne, le modifier casse les liens existants.
@@ -705,7 +762,7 @@ export interface Dossier {
   slug?: string | null;
   kicker?: string | null;
   description?: string | null;
-  coverImage?: (number | null) | Media;
+  coverImage?: (string | null) | Media;
   /**
    * Décocher quand le sujet est clos : le dossier reste en ligne mais sort des mises en avant.
    */
@@ -725,7 +782,7 @@ export interface Dossier {
     /**
      * 1200 × 630. Vide = image de couverture, puis image par défaut du site.
      */
-    image?: (number | null) | Media;
+    image?: (string | null) | Media;
     /**
      * Retire la page des moteurs de recherche, dans cette langue uniquement.
      */
@@ -741,7 +798,7 @@ export interface Dossier {
  * via the `definition` "tags".
  */
 export interface Tag {
-  id: number;
+  id: string;
   title: string;
   /**
    * Laisser vide : généré depuis le titre de CETTE langue. Une fois l’article en ligne, le modifier casse les liens existants.
@@ -766,7 +823,7 @@ export interface Tag {
     /**
      * 1200 × 630. Vide = image de couverture, puis image par défaut du site.
      */
-    image?: (number | null) | Media;
+    image?: (string | null) | Media;
     /**
      * Retire la page des moteurs de recherche, dans cette langue uniquement.
      */
@@ -780,7 +837,7 @@ export interface Tag {
  * via the `definition` "podcasts".
  */
 export interface Podcast {
-  id: number;
+  id: string;
   title: string;
   /**
    * Laisser vide : généré depuis le titre de CETTE langue. Une fois l’article en ligne, le modifier casse les liens existants.
@@ -829,11 +886,11 @@ export interface Podcast {
   numero?: number | null;
   duree?: number | null;
   publishedAt?: string | null;
-  coverImage?: (number | null) | Media;
-  invites?: (number | Personnalite)[] | null;
-  articlesLies?: (number | Article)[] | null;
-  tags?: (number | Tag)[] | null;
-  creePar?: (number | null) | User;
+  coverImage?: (string | null) | Media;
+  invites?: (string | Personnalite)[] | null;
+  articlesLies?: (string | Article)[] | null;
+  tags?: (string | Tag)[] | null;
+  creePar?: (string | null) | User;
   /**
    * Facultatif. Vide = le titre et le chapeau de l’article sont utilisés.
    */
@@ -849,7 +906,108 @@ export interface Podcast {
     /**
      * 1200 × 630. Vide = image de couverture, puis image par défaut du site.
      */
-    image?: (number | null) | Media;
+    image?: (string | null) | Media;
+    /**
+     * Retire la page des moteurs de recherche, dans cette langue uniquement.
+     */
+    noindex?: boolean | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "videos".
+ */
+export interface Video {
+  id: string;
+  title: string;
+  /**
+   * Deux mots au-dessus du titre : « Décryptage », « Entretien », « En 5 minutes ».
+   */
+  kicker?: string | null;
+  /**
+   * Collez l’URL telle quelle : lien de partage, lien watch ou lien d’intégration. Ne pas téléverser le fichier vidéo.
+   */
+  url: string;
+  /**
+   * Affichée sur la vignette (8:32).
+   */
+  duree?: number | null;
+  publishedAt?: string | null;
+  /**
+   * Recommandée en 16:9. À défaut, une image d’attente aux couleurs du journal est affichée — jamais la vignette de la plateforme.
+   */
+  coverImage?: (string | null) | Media;
+  articlesLies?: (string | Article)[] | null;
+  tags?: (string | Tag)[] | null;
+  creePar?: (string | null) | User;
+  /**
+   * Facultatif. Vide = le titre et le chapeau de l’article sont utilisés.
+   */
+  seo?: {
+    /**
+     * Environ 60 caractères. Au-delà, Google tronque.
+     */
+    title?: string | null;
+    /**
+     * Environ 155 caractères.
+     */
+    description?: string | null;
+    /**
+     * 1200 × 630. Vide = image de couverture, puis image par défaut du site.
+     */
+    image?: (string | null) | Media;
+    /**
+     * Retire la page des moteurs de recherche, dans cette langue uniquement.
+     */
+    noindex?: boolean | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "documents".
+ */
+export interface Document {
+  id: string;
+  title: string;
+  /**
+   * Laisser vide : généré depuis le titre de CETTE langue. Une fois l’article en ligne, le modifier casse les liens existants.
+   */
+  slug?: string | null;
+  /**
+   * Deux lignes : ce que contient le document et à qui il sert. C’est le seul texte indexable — le PDF, lui, ne l’est pas.
+   */
+  description?: string | null;
+  /**
+   * Décide la section dans laquelle le document apparaît sur la page Documents & modèles.
+   */
+  categorie: 'contrat' | 'attestation' | 'etude' | 'synthese' | 'autre';
+  fichier: string | Fichier;
+  publishedAt?: string | null;
+  articlesLies?: (string | Article)[] | null;
+  tags?: (string | Tag)[] | null;
+  creePar?: (string | null) | User;
+  /**
+   * Facultatif. Vide = le titre et le chapeau de l’article sont utilisés.
+   */
+  seo?: {
+    /**
+     * Environ 60 caractères. Au-delà, Google tronque.
+     */
+    title?: string | null;
+    /**
+     * Environ 155 caractères.
+     */
+    description?: string | null;
+    /**
+     * 1200 × 630. Vide = image de couverture, puis image par défaut du site.
+     */
+    image?: (string | null) | Media;
     /**
      * Retire la page des moteurs de recherche, dans cette langue uniquement.
      */
@@ -864,7 +1022,7 @@ export interface Podcast {
  * via the `definition` "pages".
  */
 export interface Page {
-  id: number;
+  id: string;
   title: string;
   /**
    * Laisser vide : généré depuis le titre de CETTE langue. Une fois l’article en ligne, le modifier casse les liens existants.
@@ -897,7 +1055,7 @@ export interface Page {
     };
     [k: string]: unknown;
   } | null;
-  creePar?: (number | null) | User;
+  creePar?: (string | null) | User;
   /**
    * Facultatif. Vide = le titre et le chapeau de l’article sont utilisés.
    */
@@ -913,7 +1071,7 @@ export interface Page {
     /**
      * 1200 × 630. Vide = image de couverture, puis image par défaut du site.
      */
-    image?: (number | null) | Media;
+    image?: (string | null) | Media;
     /**
      * Retire la page des moteurs de recherche, dans cette langue uniquement.
      */
@@ -924,13 +1082,47 @@ export interface Page {
   _status?: ('draft' | 'published') | null;
 }
 /**
+ * Un emplacement libre affiche une invitation à réserver l’espace. Rien à supprimer pour « éteindre » une campagne : décochez « Active ».
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "publicites".
+ */
+export interface Publicite {
+  id: string;
+  /**
+   * Le nom réel de l’annonceur : il sert de texte alternatif à l’image, donc il est lu par les lecteurs d’écran.
+   */
+  annonceur: string;
+  /**
+   * Le format est imposé par l’emplacement. Fournir l’image à ces dimensions exactes : une image au mauvais rapport sera centrée dans le cadre, pas étirée.
+   */
+  emplacement: 'header-leaderboard' | 'rail-top' | 'rail-bottom';
+  visuel: string | Media;
+  /**
+   * URL complète, https:// inclus. Le lien est marqué « sponsorisé » pour Google — obligatoire, et cela protège le référencement du journal.
+   */
+  lienCible: string;
+  dateDebut?: string | null;
+  /**
+   * Laisser vide pour une diffusion sans échéance.
+   */
+  dateFin?: string | null;
+  actif?: boolean | null;
+  /**
+   * Contact, numéro de bon de commande, montant. Jamais affiché sur le site.
+   */
+  note?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Données personnelles (loi 09-08). Ne pas exporter hors des besoins de la newsletter ; toute désinscription doit être honorée sans délai.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "newsletter".
  */
 export interface Newsletter {
-  id: number;
+  id: string;
   email: string;
   prenom?: string | null;
   locale: 'fr' | 'ar';
@@ -949,11 +1141,50 @@ export interface Newsletter {
   createdAt: string;
 }
 /**
+ * Les comptes lecteurs gratuits. Ils n’ont jamais accès à ce tableau de bord.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "abonnes".
+ */
+export interface Abonne {
+  id: string;
+  /**
+   * Facultatif : un lecteur n’est pas obligé de se nommer pour recevoir la newsletter.
+   */
+  nom?: string | null;
+  /**
+   * Détermine la langue des envois. Un article sans version dans cette langue n’est pas envoyé (règle d’or #2).
+   */
+  localePreferee?: ('fr' | 'ar') | null;
+  /**
+   * Loi 09-08 : le consentement doit être explicite et daté. Ne jamais cocher à la place du lecteur.
+   */
+  consentementNewsletter?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  sessions?:
+    | {
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
+    | null;
+  password?: string | null;
+  collection: 'abonnes';
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
-  id: number;
+  id: string;
   key: string;
   data:
     | {
@@ -970,65 +1201,90 @@ export interface PayloadKv {
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
-  id: number;
+  id: string;
   document?:
     | ({
         relationTo: 'articles';
-        value: number | Article;
+        value: string | Article;
       } | null)
     | ({
         relationTo: 'podcasts';
-        value: number | Podcast;
+        value: string | Podcast;
+      } | null)
+    | ({
+        relationTo: 'videos';
+        value: string | Video;
+      } | null)
+    | ({
+        relationTo: 'documents';
+        value: string | Document;
       } | null)
     | ({
         relationTo: 'dossiers';
-        value: number | Dossier;
+        value: string | Dossier;
       } | null)
     | ({
         relationTo: 'pages';
-        value: number | Page;
+        value: string | Page;
       } | null)
     | ({
         relationTo: 'media';
-        value: number | Media;
+        value: string | Media;
+      } | null)
+    | ({
+        relationTo: 'fichiers';
+        value: string | Fichier;
       } | null)
     | ({
         relationTo: 'startups';
-        value: number | Startup;
+        value: string | Startup;
       } | null)
     | ({
         relationTo: 'entreprises';
-        value: number | Entreprise;
+        value: string | Entreprise;
       } | null)
     | ({
         relationTo: 'personnalites';
-        value: number | Personnalite;
+        value: string | Personnalite;
       } | null)
     | ({
         relationTo: 'textes-juridiques';
-        value: number | TextesJuridique;
+        value: string | TextesJuridique;
       } | null)
     | ({
         relationTo: 'auteurs';
-        value: number | Auteur;
+        value: string | Auteur;
       } | null)
     | ({
         relationTo: 'tags';
-        value: number | Tag;
+        value: string | Tag;
+      } | null)
+    | ({
+        relationTo: 'publicites';
+        value: string | Publicite;
       } | null)
     | ({
         relationTo: 'newsletter';
-        value: number | Newsletter;
+        value: string | Newsletter;
+      } | null)
+    | ({
+        relationTo: 'abonnes';
+        value: string | Abonne;
       } | null)
     | ({
         relationTo: 'users';
-        value: number | User;
+        value: string | User;
       } | null);
   globalSlug?: string | null;
-  user: {
-    relationTo: 'users';
-    value: number | User;
-  };
+  user:
+    | {
+        relationTo: 'abonnes';
+        value: string | Abonne;
+      }
+    | {
+        relationTo: 'users';
+        value: string | User;
+      };
   updatedAt: string;
   createdAt: string;
 }
@@ -1037,11 +1293,16 @@ export interface PayloadLockedDocument {
  * via the `definition` "payload-preferences".
  */
 export interface PayloadPreference {
-  id: number;
-  user: {
-    relationTo: 'users';
-    value: number | User;
-  };
+  id: string;
+  user:
+    | {
+        relationTo: 'abonnes';
+        value: string | Abonne;
+      }
+    | {
+        relationTo: 'users';
+        value: string | User;
+      };
   key?: string | null;
   value?:
     | {
@@ -1060,7 +1321,7 @@ export interface PayloadPreference {
  * via the `definition` "payload-migrations".
  */
 export interface PayloadMigration {
-  id: number;
+  id: string;
   name?: string | null;
   batch?: number | null;
   updatedAt: string;
@@ -1117,6 +1378,58 @@ export interface PodcastsSelect<T extends boolean = true> {
   publishedAt?: T;
   coverImage?: T;
   invites?: T;
+  articlesLies?: T;
+  tags?: T;
+  creePar?: T;
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+        noindex?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "videos_select".
+ */
+export interface VideosSelect<T extends boolean = true> {
+  title?: T;
+  kicker?: T;
+  url?: T;
+  duree?: T;
+  publishedAt?: T;
+  coverImage?: T;
+  articlesLies?: T;
+  tags?: T;
+  creePar?: T;
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+        noindex?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "documents_select".
+ */
+export interface DocumentsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  description?: T;
+  categorie?: T;
+  fichier?: T;
+  publishedAt?: T;
   articlesLies?: T;
   tags?: T;
   creePar?: T;
@@ -1243,6 +1556,24 @@ export interface MediaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "fichiers_select".
+ */
+export interface FichiersSelect<T extends boolean = true> {
+  note?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "startups_select".
  */
 export interface StartupsSelect<T extends boolean = true> {
@@ -1341,6 +1672,7 @@ export interface TextesJuridiquesSelect<T extends boolean = true> {
   datePublicationBO?: T;
   numeroBO?: T;
   lienOfficiel?: T;
+  fichier?: T;
   resume?: T;
   textesLies?: T;
   seo?:
@@ -1400,6 +1732,22 @@ export interface TagsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "publicites_select".
+ */
+export interface PublicitesSelect<T extends boolean = true> {
+  annonceur?: T;
+  emplacement?: T;
+  visuel?: T;
+  lienCible?: T;
+  dateDebut?: T;
+  dateFin?: T;
+  actif?: T;
+  note?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "newsletter_select".
  */
 export interface NewsletterSelect<T extends boolean = true> {
@@ -1413,6 +1761,31 @@ export interface NewsletterSelect<T extends boolean = true> {
   brevoSynced?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "abonnes_select".
+ */
+export interface AbonnesSelect<T extends boolean = true> {
+  nom?: T;
+  localePreferee?: T;
+  consentementNewsletter?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  email?: T;
+  resetPasswordToken?: T;
+  resetPasswordExpiration?: T;
+  salt?: T;
+  hash?: T;
+  loginAttempts?: T;
+  lockUntil?: T;
+  sessions?:
+    | T
+    | {
+        id?: T;
+        createdAt?: T;
+        expiresAt?: T;
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

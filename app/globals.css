@@ -222,3 +222,47 @@ video {
     scroll-behavior: auto !important;
   }
 }
+
+/*
+ * Bottom breathing room for the listing / article / static pages. The homepage
+ * manages its own rhythm, so it does not use this.
+ */
+.page-body {
+  padding-block-end: var(--space-2xl);
+}
+
+/* Two-column split used by the entity hubs and « La rédaction »: an identity
+   panel beside the main column, stacking under 900px. */
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 320px);
+  gap: var(--space-xl);
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/*
+ * Content column + advertising rail, used by the homepage, the article page and
+ * the rubrique listings. The rail is the second column, so it sits on the right
+ * under /fr and mirrors to the left under /ar — which is the reading-side an
+ * Arabic reader expects (règle d'or #3).
+ *
+ * Columns stretch on purpose: the sticky slot inside the rail needs the full
+ * row height to travel down.
+ */
+.with-rail {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: var(--space-xl);
+}
+
+@media (max-width: 1100px) {
+  .with-rail {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

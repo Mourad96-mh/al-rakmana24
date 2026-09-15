@@ -8,8 +8,13 @@
     "home": "Accueil",
     "podcast": "Podcast",
     "search": "Rechercher",
+    "searchPlaceholder": "Rechercher un article…",
     "menu": "Menu",
     "close": "Fermer",
+    "rubriques": "Rubriques",
+    "explore": "Explorer",
+    "journal": "Le journal",
+    "expand": "Afficher les sous-rubriques",
     "skipToContent": "Aller au contenu principal",
     "switchToArabic": "العربية",
     "switchLanguage": "Changer de langue"
@@ -31,6 +36,28 @@
     "consent": "J'accepte de recevoir la newsletter d'Al-Raqmana24. Je peux me désabonner à tout moment.",
     "success": "Merci, votre inscription est enregistrée.",
     "error": "L'inscription a échoué. Merci de réessayer."
+  },
+  "ads": {
+    "label": "Publicité",
+    "placeholder": "Espace publicitaire",
+    "cta": "Réserver cet espace"
+  },
+  "videos": {
+    "title": "Vidéos",
+    "play": "Lire la vidéo",
+    "pending": "Vidéo de démonstration",
+    "empty": "Aucune vidéo publiée pour le moment.",
+    "pendingNote": "Les vignettes ci-dessus sont des exemples : le lecteur s’activera dès qu’une URL YouTube ou Vimeo sera saisie dans le tableau de bord."
+  },
+  "downloads": {
+    "title": "Téléchargements",
+    "download": "Télécharger",
+    "documents": "Documents & modèles",
+    "documentsIntro": "Contrats types, attestations, études et synthèses préparés par la rédaction. Documents à usage informatif : ils ne remplacent pas l’avis d’un professionnel.",
+    "legal": "Textes légaux",
+    "legalIntro": "Les textes officiels qui encadrent l’activité numérique, en téléchargement, avec la fiche de suivi de chacun.",
+    "empty": "Aucun document disponible pour le moment.",
+    "disclaimer": "Documents de démonstration : le fichier téléchargé est un fac-similé sans valeur juridique, à remplacer depuis le tableau de bord."
   },
   "article": {
     "readMore": "Lire la suite",

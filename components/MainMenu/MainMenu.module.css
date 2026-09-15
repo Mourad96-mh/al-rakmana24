@@ -1,0 +1,415 @@
+/* ---------- the burger trigger, in the masthead ---------- */
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+[dir='rtl'] .trigger {
+  letter-spacing: normal;
+  text-transform: none;
+  font-size: 0.82rem;
+}
+
+.trigger:hover {
+  color: var(--brand-red);
+}
+
+.burger {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  inline-size: 20px;
+  block-size: 14px;
+}
+
+.burger span {
+  display: block;
+  block-size: 2px;
+  background: currentColor;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+/* Open state: the bars fold into a cross, as on the reference site. */
+.burgerOpen span:nth-child(1) {
+  transform: translateY(6px) rotate(45deg);
+}
+
+.burgerOpen span:nth-child(2) {
+  opacity: 0;
+}
+
+.burgerOpen span:nth-child(3) {
+  transform: translateY(-6px) rotate(-45deg);
+}
+
+/* ---------- overlay + scrim ---------- */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200; /* above .skip-link (100) in globals.css */
+  visibility: hidden;
+  transition: visibility 0s linear 0.3s;
+}
+
+.overlay[data-open] {
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  padding: 0;
+  border: 0;
+  background: rgba(10, 10, 10, 0.55);
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+}
+
+.overlay[data-open] .scrim {
+  opacity: 1;
+}
+
+/* ---------- the panel ---------- */
+
+.panel {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: min(100%, 460px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--space-m) var(--space-m) var(--space-xl);
+  background: var(--surface-invert);
+  color: #ffffff;
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* translateX does not flip on its own; without this the /ar panel slides out
+   of the viewport instead of into it. */
+[dir='rtl'] .panel {
+  transform: translateX(100%);
+}
+
+.overlay[data-open] .panel,
+[dir='rtl'] .overlay[data-open] .panel {
+  transform: translateX(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrim,
+  .panel,
+  .burger span,
+  .chevron {
+    transition: none;
+  }
+}
+
+@media (min-width: 1100px) {
+  .panel {
+    inline-size: 540px;
+    padding-inline: var(--space-l);
+  }
+}
+
+/* ---------- panel head ---------- */
+
+.panelHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-s);
+  padding-block-end: var(--space-s);
+  border-block-end: 1px solid #262626;
+}
+
+.close {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #ffffff;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+[dir='rtl'] .close,
+[dir='rtl'] .lang,
+[dir='rtl'] .columnTitle,
+[dir='rtl'] .cta,
+[dir='rtl'] .searchSubmit {
+  letter-spacing: normal;
+  text-transform: none;
+  font-size: 0.85rem;
+}
+
+.close:hover {
+  color: var(--brand-red);
+}
+
+.closeIcon {
+  position: relative;
+  inline-size: 16px;
+  block-size: 16px;
+}
+
+.closeIcon::before,
+.closeIcon::after {
+  content: '';
+  position: absolute;
+  inset-block-start: 7px;
+  inset-inline: 0;
+  border-block-start: 2px solid currentColor;
+}
+
+.closeIcon::before {
+  transform: rotate(45deg);
+}
+
+.closeIcon::after {
+  transform: rotate(-45deg);
+}
+
+.lang {
+  color: #ffffff;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  border: 1px solid #3a3a3a;
+  padding: var(--space-3xs) var(--space-2xs);
+}
+
+.lang:hover {
+  border-color: var(--brand-red);
+  color: var(--brand-red);
+}
+
+/* ---------- search ---------- */
+
+.search {
+  display: flex;
+  gap: var(--space-2xs);
+  margin-block: var(--space-m);
+}
+
+.srOnly {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.searchInput {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  padding: var(--space-2xs) var(--space-xs);
+  border: 1px solid #3a3a3a;
+  background: #141414;
+  color: #ffffff;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+}
+
+.searchInput::placeholder {
+  color: #7a7a7a;
+}
+
+.searchInput:focus-visible {
+  outline: 2px solid var(--brand-red);
+  outline-offset: -2px;
+}
+
+.searchSubmit {
+  padding-inline: var(--space-s);
+  border: 0;
+  background: var(--brand-red);
+  color: #ffffff;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.searchSubmit:hover {
+  background: var(--brand-red-dark);
+}
+
+/* ---------- rubriques ---------- */
+
+.sectionList,
+.subList,
+.columnList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.section {
+  border-block-end: 1px solid #1f1f1f;
+}
+
+.sectionRow {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: var(--space-2xs);
+}
+
+.sectionLink {
+  flex: 1 1 auto;
+  padding-block: var(--space-xs);
+  color: #ffffff;
+  text-decoration: none;
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: var(--leading-tight);
+}
+
+.sectionLink:hover {
+  color: var(--brand-red);
+}
+
+.sectionToggle {
+  flex: 0 0 auto;
+  inline-size: 44px;
+  border: 0;
+  background: none;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.sectionToggle:hover {
+  color: var(--brand-red);
+}
+
+.chevron {
+  display: block;
+  inline-size: 9px;
+  block-size: 9px;
+  margin-inline: auto;
+  /* PHYSICAL borders on purpose: "down" is down in both directions. Logical
+     ones make the glyph point sideways on /ar (règle d'or #3's exception). */
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  transform-origin: center;
+  transition: transform 0.2s ease;
+}
+
+.chevronOpen {
+  transform: rotate(-135deg);
+}
+
+.subList {
+  padding-block: 0 var(--space-xs);
+  padding-inline-start: var(--space-s);
+  border-inline-start: 2px solid var(--brand-red);
+}
+
+.subLink {
+  display: block;
+  padding-block: var(--space-3xs);
+  color: #c9c9c9;
+  text-decoration: none;
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+}
+
+.subLink:hover {
+  color: #ffffff;
+}
+
+/* ---------- secondary columns ---------- */
+
+.columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-m);
+  margin-block-start: var(--space-l);
+}
+
+.columnTitle {
+  margin: 0 0 var(--space-2xs);
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--brand-red);
+}
+
+.columnLink {
+  display: block;
+  padding-block: var(--space-3xs);
+  color: #c9c9c9;
+  text-decoration: none;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+}
+
+.columnLink:hover {
+  color: #ffffff;
+}
+
+/* ---------- footer CTA ---------- */
+
+.cta {
+  display: block;
+  margin-block-start: var(--space-l);
+  padding: var(--space-xs);
+  background: var(--brand-red);
+  color: #ffffff;
+  text-align: center;
+  text-decoration: none;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.cta:hover {
+  background: var(--brand-red-dark);
+}
+
+@media (max-width: 900px) {
+  .triggerLabel {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

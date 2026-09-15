@@ -1,0 +1,91 @@
+.prose {
+  max-inline-size: var(--measure);
+  font-size: var(--step-1);
+  line-height: var(--leading-body);
+}
+
+.paragraph {
+  margin: 0 0 var(--space-m);
+}
+
+/* The opening paragraph carries the article: slightly larger, and set on the
+   heading family so it reads as a standfirst rather than as body copy. */
+.paragraph:first-child {
+  font-size: var(--step-2);
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+.heading {
+  margin-block: var(--space-xl) var(--space-s);
+  font-size: var(--step-3);
+}
+
+.list {
+  margin: 0 0 var(--space-m);
+  padding-inline-start: var(--space-m);
+}
+
+.list li {
+  margin-block-end: var(--space-2xs);
+}
+
+.list li::marker {
+  color: var(--accent);
+}
+
+/* ---------- pull quote ---------- */
+
+.quote {
+  margin: var(--space-l) 0;
+  padding-inline-start: var(--space-m);
+  border-inline-start: 4px solid var(--accent);
+}
+
+.quoteText {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--step-3);
+  line-height: 1.3;
+  font-weight: 600;
+}
+
+.attribution {
+  margin-block-start: var(--space-2xs);
+  color: var(--ink-muted);
+  font-size: var(--step--1);
+  font-style: normal;
+}
+
+.attribution::before {
+  content: '— ';
+}
+
+/* ---------- callout ---------- */
+
+.callout {
+  margin: var(--space-l) 0;
+  padding: var(--space-s) var(--space-m);
+  background: var(--surface-alt);
+  border-inline-start: 4px solid var(--ink);
+}
+
+.calloutTitle {
+  margin: 0 0 var(--space-3xs);
+  font-family: var(--font-body);
+  font-size: var(--step--1);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+[dir='rtl'] .calloutTitle {
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.calloutText {
+  margin: 0;
+  font-size: var(--step-0);
+  color: var(--ink-muted);
+}

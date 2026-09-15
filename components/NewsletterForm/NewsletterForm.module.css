@@ -1,0 +1,85 @@
+.form {
+  display: grid;
+  gap: var(--space-s);
+  max-inline-size: 34rem;
+}
+
+.field {
+  display: grid;
+  gap: var(--space-3xs);
+}
+
+.label {
+  font-size: var(--step--1);
+  font-weight: 600;
+}
+
+.input {
+  inline-size: 100%;
+  padding: var(--space-2xs) var(--space-xs);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--step-0);
+}
+
+.input:focus-visible {
+  border-color: var(--accent);
+}
+
+.submit {
+  justify-self: start;
+  padding: var(--space-2xs) var(--space-m);
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: #ffffff;
+  font-family: var(--font-body);
+  font-size: var(--step-0);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.submit:hover {
+  background: var(--accent-hover);
+}
+
+.consent {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: var(--step--1);
+}
+
+.notice {
+  margin: 0;
+  padding: var(--space-2xs) var(--space-xs);
+  background: var(--brand-red-tint);
+  border-inline-start: 3px solid var(--accent);
+  color: var(--ink);
+  font-size: var(--step--1);
+}
+
+/* Footer band: the label is redundant next to the heading, and the control row
+   needs to sit on one line. */
+.compact {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--space-2xs);
+  max-inline-size: 30rem;
+}
+
+.compact .label {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.compact .consent,
+.compact .notice {
+  grid-column: 1 / -1;
+}

@@ -10,17 +10,33 @@ import type { Access, CollectionBeforeChangeHook, FieldAccess, Field, Where } fr
  * touch someone else's work, and never delete.**
  */
 
+/**
+ * The roles of the NEWSROOM. Every one of them is staff.
+ *
+ * `abonne` used to be the fifth entry here, and its removal is the point of the
+ * split: readers now live in their own auth collection (`collections/Abonnes`),
+ * which the admin panel does not authenticate against at all. A reader is no
+ * longer "a user with the weakest role" — they are not a user of this system.
+ *
+ * The practical consequence: `req.user` on a public request is an Abonne, which
+ * has no `role` at all, so every helper below fails closed on it.
+ */
 export const ROLES = [
   'admin',
   'redacteur-en-chef',
   'journaliste',
   'contributeur',
-  'abonne',
 ] as const
 
 export type Role = (typeof ROLES)[number]
 
-/** Roles allowed into the Payload admin panel at all. */
+/**
+ * Roles allowed into the Payload admin panel at all.
+ *
+ * Identical to ROLES since the split — kept as its own export because the two
+ * answer different questions ("what roles exist" vs "who gets the back-office")
+ * and will diverge the moment a non-staff staff role appears.
+ */
 export const STAFF_ROLES: readonly Role[] = [
   'admin',
   'redacteur-en-chef',
@@ -55,6 +71,21 @@ export const isStaff: Access = ({ req }) => hasRole(userOf(req), STAFF_ROLES)
 export const isContributeur = (user: MaybeUser): boolean => roleOf(user) === 'contributeur'
 
 /**
+ * `isEditorial`, for `admin.hidden`.
+ *
+ * Payload hands `admin.hidden` the raw user, not an access-control `req`, so
+ * the `Access` helpers above do not fit its signature — hence this twin.
+ *
+ * Use it to keep a collection out of a sidebar it has no business in. It is
+ * COSMETIC: hiding a nav entry is not access control, and on `Publicites`
+ * (whose `read` is public, because the site itself fetches the creatives
+ * unauthenticated) it is *only* cosmetic. Every collection that hides itself
+ * must still be refused by its `access` block.
+ */
+export const isEditorialUser = (user: unknown): boolean =>
+  hasRole(user as MaybeUser, EDITORIAL_ROLES)
+
+/**
  * Contributors may create drafts but never publish or delete; the editorial
  * roles above own the publish button.
  */
@@ -63,9 +94,12 @@ export const canCreateContent: Access = ({ req }) => hasRole(userOf(req), STAFF_
 /**
  * Read access for a collection with drafts enabled.
  *
- * Anonymous visitors and `abonne` accounts see published documents only. Staff
+ * Anonymous visitors and logged-in Abonnés see published documents only. Staff
  * see drafts too, which is what makes Payload's live preview and the admin list
  * view work.
+ *
+ * An Abonné carries no `role`, so it takes the public branch here without any
+ * special case — the split does the work that an `abonne` role used to do.
  *
  * NOTE: this returns a Where clause rather than `false` for the public, so the
  * public REST/GraphQL API stays usable — the site itself is a consumer of it.
@@ -105,7 +139,12 @@ export const adminOrSelf: Access = ({ req }) => {
 
 /**
  * Strict boolean — Payload's `admin.access` must not return a Where clause.
- * Keeps `abonne` (newsletter/free account holders) out of the CMS entirely.
+ *
+ * Since the Users/Abonnes split this is the SECOND lock rather than the only
+ * one: a reader's credentials are not accepted at /admin/login in the first
+ * place, because that form authenticates against `admin.user` (= `users`) and
+ * readers are not in it. This still guards the case that matters — a staff
+ * account whose role was narrowed after it was created.
  */
 export const staffAdminPanel = ({ req }: { req: { user?: unknown } }): boolean =>
   hasRole(userOf(req), STAFF_ROLES)

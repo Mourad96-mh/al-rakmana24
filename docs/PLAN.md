@@ -13,18 +13,18 @@ Statut : `⬜ à faire` · `🟡 en cours` · `✅ fait & vérifié`
 > **Fait & vérifié** : squelette Next 15.5.19 + Payload 3.85.1, bilingue FR/AR complet,
 > `pnpm lint` ✓, `pnpm build` ✓ (`/fr` et `/ar` en **SSG**), smoke `next start` ✓
 > (`/`→307 `/fr`, `/fr`+`/ar`=200 avec `dir` correct, rubrique inconnue=404).
-> **Reste** : la chaîne de connexion Neon — sans elle `/admin` renvoie 500 et
+> **Reste** : la chaîne de connexion MongoDB Atlas — sans elle `/admin` renvoie 500 et
 > `generate:types` / `generate:importmap` / `seed` ne peuvent pas tourner.
 
 
-Objectif : un squelette qui build, avec Payload branché sur Neon et le bilingue configuré.
+Objectif : un squelette qui build, avec Payload branché sur MongoDB Atlas et le bilingue configuré.
 
 - [ ] `create-next-app` **en pinnant Next 15.5.19** (pas `@latest` → installerait Next 16, incompatible Payload 3), TypeScript strict, App Router, pas de Tailwind, pas de `src/`.
 - [ ] `package.json` : `"type": "module"`, scripts `dev/build/lint/seed/payload/test:e2e`.
 - [ ] `.npmrc` (`verify-deps-before-run=false`) + `pnpm-workspace.yaml` (`onlyBuiltDependencies`: sharp, unrs-resolver, esbuild ; `allowBuilds: true`).
-- [ ] Payload 3.85.1 + `@payloadcms/db-postgres` + `@payloadcms/richtext-lexical` + sharp 0.34.5.
+- [ ] Payload 3.85.1 + `@payloadcms/db-mongodb` + `@payloadcms/richtext-lexical` + sharp 0.34.5.
 - [ ] `next.config.ts` : `outputFileTracingRoot` pinné sur ce dossier.
-- [ ] Base Neon (eu-central-1), `DATABASE_URI` + `PAYLOAD_SECRET` dans `.env` (gitignored), `.env.example` commité.
+- [ ] Cluster MongoDB Atlas (région européenne), `DATABASE_URI` + `PAYLOAD_SECRET` + `CLOUDINARY_URL` dans `.env` (gitignored), `.env.example` commité.
 - [ ] **Localisation Payload** : locales `fr` (défaut) + `ar` (`rtl: true`), **`fallback: false`** (règle d'or #2).
 - [ ] Route groups `app/(frontend)/[lang]/` et `app/(payload)/` — **pas** de `app/layout.tsx` racine.
 - [ ] next-intl : middleware, `routing.ts` avec pathnames localisés FR/AR, `[lang]` = `fr | ar`.
@@ -46,7 +46,7 @@ Objectif : un squelette qui build, avec Payload branché sur Neon et le bilingue
 > `payload generate:types` ✓ (`payload-types.ts` généré, il n'a pas besoin de la base),
 > `tsc --noEmit` ✓, `pnpm lint` ✓, `pnpm build` ✓ (`/fr` et `/ar` toujours en **SSG**),
 > smoke `next start` ✓ (`/`→307 `/fr`, `/fr`+`/ar`=200 avec `dir` correct).
-> **Reste, et c'est le même blocage qu'au Lot 1** : sans chaîne Neon, `/admin`
+> **Reste, et c'est le même blocage qu'au Lot 1** : sans chaîne Atlas, `/admin`
 > renvoie 500 (`ECONNREFUSED ::1:5432` — la variable est vide, `pg` retombe sur
 > localhost) et `pnpm seed` ne peut pas tourner. Rien d'autre ne bloque.
 
@@ -68,20 +68,41 @@ Objectif : les 13 collections, les helpers de champs, un seed bilingue idempoten
 
 ---
 
-## Lot 3 — Pages éditoriales ⬜
+## Lot 3 — Pages éditoriales ✅ (fait & vérifié)
+
+> **Fait & vérifié** : `lib/payload.ts`, `lib/lexical.ts` et `lib/queries.ts` écrits ;
+> les 28 pages/composants lisent désormais `@/lib/queries` ; la famille **articles**
+> et l'accueil viennent de Payload ; la boucle « Publier → en ligne » fonctionne
+> sans rebuild (testée sur `next start`). `dynamicParams = false` retiré de
+> 19 routes de contenu — il gelait les pages et empêchait tout article créé après
+> le build d'exister. `lint` ✓ `tsc` ✓ `build` ✓ (188 pages).
+> **La boucle « Publier → en ligne » est close et vérifiée** : un article créé
+> APRÈS le build existe à son URL en quelques secondes, et un article supprimé
+> repasse à 404 — en FR comme en AR. Deux bugs corrigés au passage : `afterDelete`
+> ne porte aucun champ localisé (d'où un hook `beforeDelete`), et
+> `generateStaticParams` n'encodait pas les slugs arabes des articles.
+> Migrées depuis Payload : **auteurs, dossiers, tags, hubs d'entités** — avec la
+> correction des `generateStaticParams` qui croisaient locales × slugs (184 → 144
+> routes prérendues, les slugs arabes ne sont plus annoncés sous `/fr`).
+> **Les quatre dernières familles — podcasts, pages institutionnelles, vidéos,
+> documents — sont passées à leur tour, et `lib/demo/` (≈ 3 200 lignes) a été
+> supprimé.** Plus une seule fixture inventée dans le code : tout vient du CMS.
+> `lint` ✓ `tsc` ✓ `build` ✓ (112 routes prérendues, toutes les clés `/ar`
+> pourcent-encodées) · smoke `next start` ✓ (19 URL, 0 échec).
+> Détail complet et pièges dans `docs/REPRISE.md`.
 
 Objectif : accueil, rubriques, sous-rubriques, article — en FR et en AR.
 
-- [ ] `lib/payload.ts` (client mémoïsé via `cache`), `lib/queries.ts`, `lib/navigation.ts`, `lib/format.ts` (dates `fr-MA` et `ar-MA`), `lib/media.ts`.
-- [ ] **Toutes les queries filtrent sur la locale active** et excluent les articles sans contenu dans cette locale (règle d'or #2).
-- [ ] Composants : `ArticleCard`, `ArticleGrid`, `Ticker` (fil d'infos), `RubriqueHeader`, `LangSwitcher`, `AdSlot` (rend `null` — seam dormant).
-- [ ] `LangSwitcher` : pointe vers la **traduction réelle** si elle existe, sinon vers l'accueil de l'autre locale (jamais un lien mort).
-- [ ] Accueil : Une + top stories + fil + dernières publications par rubrique.
-- [ ] `[rubrique]/` + `[rubrique]/[sousRubrique]/` : `generateStaticParams` × 2 locales, `notFound()` si rubrique inconnue.
-- [ ] `article/[slug]/` : rendu Lexical, JSON-LD `NewsArticle` avec `isAccessibleForFree: true`, `inLanguage`, breadcrumb.
-- [ ] `hreflang` : émis **uniquement** si la contrepartie existe.
-- [ ] ISR (`revalidate: 300`) + hook Payload `afterChange` → `revalidatePath` sur **les deux** locales.
-- [ ] RTL : vérifier visuellement l'accueil et un article en `/ar` (miroir correct, pas de `left`/`right` résiduel).
+- [x] `lib/payload.ts` (client mémoïsé via `cache`), `lib/queries.ts`, `lib/navigation.ts`, `lib/format.ts` (dates `fr-MA` et `ar-MA`), `lib/media.ts`.
+- [x] **Toutes les queries filtrent sur la locale active** et excluent les articles sans contenu dans cette locale (règle d'or #2).
+- [x] Composants : `ArticleCard`, `ArticleGrid`, `Ticker` (fil d'infos), `RubriqueHeader`, `LangSwitcher`, `AdSlot`.
+- [x] `LangSwitcher` : pointe vers la **traduction réelle** si elle existe, sinon vers l'accueil de l'autre locale (jamais un lien mort).
+- [x] Accueil : Une + top stories + fil + dernières publications par rubrique.
+- [x] `[rubrique]/` + `[rubrique]/[sousRubrique]/` : `generateStaticParams` × 2 locales, `notFound()` si rubrique inconnue.
+- [x] `article/[slug]/` : rendu Lexical, JSON-LD `NewsArticle` avec `isAccessibleForFree: true`, `inLanguage`, breadcrumb.
+- [x] `hreflang` : émis **uniquement** si la contrepartie existe.
+- [x] ISR + hook Payload `afterChange` → `revalidatePath` sur **les deux** locales (et `beforeDelete` pour les suppressions).
+- [x] `lib/demo/` supprimé : podcasts, pages, vidéos et documents viennent de Payload.
 
 **Vert quand** : `next start` — `/fr` `/ar` `/fr/economie` `/ar/...` = 200, rubrique inconnue = 404, article FR-only = 404 en `/ar/article/...`, JSON-LD présent, aucun `hreflang` orphelin.
 
@@ -106,7 +127,7 @@ Le différenciateur SEO. Personne au Maroc ne fait ça sur le créneau droit du 
 
 - [ ] Collection `Podcasts` : titre, description, invité (relation `Personnalites`), durée, date, **URL d'embed** de l'hébergeur, article lié.
 - [ ] Hébergement audio **externe** (Ausha ou Acast) — ne pas servir les MP3 depuis l'origine, ne pas écrire un flux RSS Apple à la main.
-- [ ] `/podcast/` (liste) + `/podcast/[slug]` (lecteur embarqué + notes d'épisode + transcription optionnelle).
+- [x] `/podcast/` (liste) + `/podcast/[slug]` : notes d'épisode, transcription optionnelle et **lecteur embarqué dès que `embedUrl` est renseigné** — fait au Lot 3, il ne reste que le choix de l'hébergeur et le flux RSS.
 - [ ] JSON-LD `PodcastEpisode` / `PodcastSeries`.
 
 **Vert quand** : lecteur fonctionnel en FR et AR, liste paginée, `lint` ✓ `build` ✓.
@@ -117,8 +138,9 @@ Le différenciateur SEO. Personne au Maroc ne fait ça sur le créneau droit du 
 
 - [ ] `NewsletterForm` (îlot client `useActionState`) dans le footer global → Server Action → upsert dans la collection `Newsletter` (**consentement loi 09-08** + source + locale) puis sync best-effort Brevo.
 - [ ] `lib/brevo.ts` = seam tolérant : sans `BREVO_API_KEY`, renvoie `{ synced: false }` sans rien casser.
-- [ ] Compte **gratuit** : `/connexion` `/inscription` `/compte` (noindex), rôle forcé `abonne` côté serveur. **Aucun paiement** (règle d'or #1).
-- [ ] Header : état de connexion via îlot client qui fetch `/api/me` après hydratation (règle d'or #4).
+- [ ] Compte **gratuit** : `/connexion` `/inscription` `/compte` (noindex) → crée un document dans la collection **`Abonnes`**, jamais dans `Users` (voir `/CLAUDE.md` §6 : il n'existe plus de rôle `abonne`, la séparation est faite par collection). **Aucun paiement** (règle d'or #1).
+- [ ] Ouvrir `Abonnes.access.create` au public **en même temps** que le formulaire — aujourd'hui `isAdmin`, fermé exprès : l'endpoint doit arriver avec son rate limiting et sa capture de consentement, pas avant.
+- [ ] Header : état de connexion via îlot client qui fetch `/api/abonnes/me` après hydratation (règle d'or #4).
 - [ ] Pages depuis la collection `Pages` : `la-redaction`, `qui-sommes-nous`, `nous-rejoindre`, `nous-contacter` — FR et AR.
 - [ ] Formulaire de contact + mentions légales / politique de confidentialité (loi 09-08).
 
@@ -148,9 +170,9 @@ Le différenciateur SEO. Personne au Maroc ne fait ça sur le créneau droit du 
 ## Lot 8 — Déploiement & passation ⬜
 
 - [ ] **Confirmer l'hébergement avec le client** (VPS Hostinger recommandé ; voir `/CLAUDE.md` §8).
-- [ ] `Dockerfile` + `docker-compose` (Next + Postgres), ou déploiement Vercel selon l'arbitrage.
+- [ ] `Dockerfile` (Next + Payload, `output: 'standalone'`), ou service Render / Vercel selon l'arbitrage. La base et les médias sont hors du serveur (Atlas + Cloudinary).
 - [ ] Domaine `al-raqmana24.ma`, TLS, redirections `www`, headers de sécurité.
-- [ ] Sauvegardes Postgres + stockage média (Cloudflare R2 ou volume).
+- [ ] Sauvegardes : Atlas (backup continu du plan payant, sinon `mongodump` planifié) + médias Cloudinary. **Tester une restauration**, pas seulement l'activer.
 - [ ] Search Console : les deux locales, soumission des sitemaps (compte de service `gsc` déjà en place).
 - [ ] **Guide rédacteur en français** : publier, traduire, lier une entité, programmer, gérer les médias.
 - [ ] Session de formation de la rédaction.

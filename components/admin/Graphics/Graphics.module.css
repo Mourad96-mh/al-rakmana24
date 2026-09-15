@@ -1,0 +1,48 @@
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.disc {
+  display: grid;
+  place-items: center;
+  inline-size: 4.5rem;
+  block-size: 4.5rem;
+  border-radius: 50%;
+  background: #ffffff;
+  flex: 0 0 auto;
+}
+
+.iconDisc {
+  display: grid;
+  place-items: center;
+  inline-size: 2rem;
+  block-size: 2rem;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+.mark {
+  inline-size: auto;
+  block-size: auto;
+  max-inline-size: 78%;
+  object-fit: contain;
+}
+
+.words {
+  display: flex;
+  flex-direction: column;
+  text-align: start;
+}
+
+.name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.tagline {
+  font-size: 0.75rem;
+  color: var(--theme-elevation-500);
+}

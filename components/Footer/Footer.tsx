@@ -1,34 +1,55 @@
 import Image from 'next/image'
 import { getTranslations } from 'next-intl/server'
 import { RUBRIQUES, type Locale } from '@/lib/rubriques'
+import * as links from '@/lib/links'
+import { NewsletterForm } from '@/components/NewsletterForm/NewsletterForm'
 import styles from './Footer.module.css'
 
 export async function Footer({ locale }: { locale: Locale }) {
   const t = await getTranslations('footer')
   const tSite = await getTranslations('site')
+  const tNav = await getTranslations('nav')
   const tNews = await getTranslations('newsletter')
+  const tDl = await getTranslations('downloads')
   const year = new Date().getFullYear()
+  const fr = locale === 'fr'
 
   const institutional = [
-    { href: `/${locale}/qui-sommes-nous`, label: t('about') },
-    { href: `/${locale}/la-redaction`, label: t('redaction') },
-    { href: `/${locale}/nous-rejoindre`, label: t('join') },
-    { href: `/${locale}/nous-contacter`, label: t('contact') },
+    { href: links.quiSommesNous(locale), label: t('about') },
+    { href: links.laRedaction(locale), label: t('redaction') },
+    { href: links.nousRejoindre(locale), label: t('join') },
+    { href: links.nousContacter(locale), label: t('contact') },
+  ]
+
+  /* Discovery surfaces that are not rubriques: the entity hubs and the series.
+     They exist mostly for search engines and returning readers, which is why
+     they live here rather than in the masthead nav. */
+  const explore = [
+    { href: links.podcastIndex(locale), label: tNav('podcast') },
+    { href: links.dossierIndex(locale), label: fr ? 'Séries & enquêtes' : 'سلاسل وتحقيقات' },
+    { href: links.entityIndex(locale, 'startups'), label: fr ? 'Startups' : 'شركات ناشئة' },
+    { href: links.entityIndex(locale, 'entreprises'), label: fr ? 'Entreprises' : 'شركات' },
+    { href: links.entityIndex(locale, 'personnalites'), label: fr ? 'Personnalités' : 'شخصيات' },
+    { href: links.entityIndex(locale, 'textes-juridiques'), label: tDl('legal') },
+    { href: links.documents(locale), label: tDl('documents') },
+    { href: links.auteurIndex(locale), label: fr ? 'Auteurs' : 'المحررون' },
+    { href: links.tagIndex(locale), label: fr ? 'Mots-clés' : 'الكلمات المفتاحية' },
   ]
 
   return (
     <footer className={styles.footer}>
       {/* Newsletter band — the free subscription is the whole business model
-          (règle d'or #1). Becomes a working form in Lot 6. */}
+          (règle d'or #1). The form itself is a client island, so the pages that
+          render this footer stay static. */}
       <div className={styles.newsletter}>
         <div className={`container ${styles.newsletterInner}`}>
           <div>
             <h2 className={styles.newsletterTitle}>{tNews('title')}</h2>
             <p className={styles.newsletterIntro}>{tNews('intro')}</p>
           </div>
-          <a className={styles.newsletterCta} href={`/${locale}/newsletter`}>
-            {tNews('submit')}
-          </a>
+          <div className={styles.newsletterForm}>
+            <NewsletterForm locale={locale} compact />
+          </div>
         </div>
       </div>
 
@@ -45,12 +66,12 @@ export async function Footer({ locale }: { locale: Locale }) {
           <p className={styles.brandTag}>{tSite('tagline')}</p>
         </div>
 
-        <nav className={styles.col} aria-label={tSite('name')}>
-          <h3 className={styles.colTitle}>{locale === 'fr' ? 'Rubriques' : 'الأقسام'}</h3>
+        <nav className={styles.col} aria-label={fr ? 'Rubriques' : 'الأقسام'}>
+          <h3 className={styles.colTitle}>{fr ? 'Rubriques' : 'الأقسام'}</h3>
           <ul className={styles.list}>
             {RUBRIQUES.map((r) => (
               <li key={r.value}>
-                <a className={styles.link} href={`/${locale}/${r.slug[locale]}`}>
+                <a className={styles.link} href={links.rubrique(locale, r)}>
                   {r.label[locale]}
                 </a>
               </li>
@@ -58,8 +79,21 @@ export async function Footer({ locale }: { locale: Locale }) {
           </ul>
         </nav>
 
+        <nav className={styles.col} aria-label={fr ? 'Explorer' : 'استكشاف'}>
+          <h3 className={styles.colTitle}>{fr ? 'Explorer' : 'استكشاف'}</h3>
+          <ul className={styles.list}>
+            {explore.map((item) => (
+              <li key={item.href}>
+                <a className={styles.link} href={item.href}>
+                  {item.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
         <nav className={styles.col} aria-label={t('about')}>
-          <h3 className={styles.colTitle}>{locale === 'fr' ? 'Le journal' : 'الجريدة'}</h3>
+          <h3 className={styles.colTitle}>{fr ? 'Le journal' : 'الجريدة'}</h3>
           <ul className={styles.list}>
             {institutional.map((item) => (
               <li key={item.href}>
@@ -79,12 +113,12 @@ export async function Footer({ locale }: { locale: Locale }) {
           </p>
           <ul className={styles.legalList}>
             <li>
-              <a className={styles.legalLink} href={`/${locale}/mentions-legales`}>
+              <a className={styles.legalLink} href={links.mentionsLegales(locale)}>
                 {t('legal')}
               </a>
             </li>
             <li>
-              <a className={styles.legalLink} href={`/${locale}/confidentialite`}>
+              <a className={styles.legalLink} href={links.confidentialite(locale)}>
                 {t('privacy')}
               </a>
             </li>

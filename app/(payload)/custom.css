@@ -1,6 +1,35 @@
 /* Charte Al-Raqmana24 dans le panneau d'administration.
-   Le rouge et le vert viennent du logo (chevrons formant un globe). */
+   Le rouge et le vert viennent du logo (chevrons formant un globe).
+
+   ⚠️ PIÈGE, et il a déjà coûté une session : les variables de Payload sont
+   déclarées dans `@layer payload-default`. Une déclaration SANS layer — comme
+   tout ce fichier — l'emporte toujours sur une déclaration dans un layer, quelle
+   que soit la spécificité. Une règle écrite ici pour `:root` s'applique donc
+   AUSSI au thème sombre et écrase la valeur inversée que Payload y met.
+
+   C'est sans conséquence pour une couleur de marque (le rouge est le rouge dans
+   les deux thèmes). C'est un bug pour toute variable dont Payload INVERSE la
+   valeur en sombre — il faut alors la limiter au thème clair, comme ci-dessous. */
+
 :root {
+  /* Le vert du logo, pour les états de succès. Même teinte dans les deux
+     thèmes : ~4,9:1 sur le fond sombre de Payload, donc AA en texte normal. */
   --theme-success-500: #16a32a;
+}
+
+/*
+  Le noir de la charte, RÉSERVÉ AU THÈME CLAIR.
+
+  `--theme-elevation-1000` n'est pas une surface : `app.scss` en fait
+  `--theme-text`, la couleur du texte de tout l'admin. Payload l'inverse en
+  sombre (`colors.scss` : base-1000 en clair, base-0 en sombre), où elle doit
+  donc être presque BLANCHE. La forcer à #101418 partout rendait tout le texte
+  du back-office invisible sur fond sombre — noir sur noir.
+
+  `:not([data-theme='dark'])` plutôt que `[data-theme='light']` : tant que
+  l'utilisateur n'a pas choisi de thème, Payload ne pose aucun attribut, et une
+  règle écrite pour `light` ne s'appliquerait pas à ce cas par défaut.
+*/
+html:not([data-theme='dark']) {
   --theme-elevation-1000: #101418;
 }

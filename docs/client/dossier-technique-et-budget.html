@@ -1,0 +1,1203 @@
+<title>Dossier technique Al-Raqmana24</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+  /* ============================================================
+     Al-Raqmana24 — dossier technique, déploiement et charges.
+     Palette reprise de la charte du site (app/globals.css) :
+     rouge de marque, noir, blanc. Le gris est légèrement biaisé
+     vers le rouge pour que les fonds appartiennent à la même famille.
+     ============================================================ */
+
+  :root {
+    --paper: #ffffff;
+    --surface: #f5f2f1;
+    --surface-deep: #ebe6e4;
+    --ink: #121010;
+    --ink-muted: #5d5654;
+    --ink-faint: #8b8280;
+    --rule: #ded7d5;
+    --rule-strong: #b9b0ad;
+    --accent: #d92415;
+    --accent-deep: #8f1409;
+    --accent-wash: #fdeceb;
+
+    --font-display: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+    --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+
+    --measure: 72ch;
+    --col: 1080px;
+  }
+
+  :root:not([data-theme="light"]) {
+    color-scheme: light;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #131110;
+      --surface: #1c1918;
+      --surface-deep: #262120;
+      --ink: #f3efed;
+      --ink-muted: #b0a7a4;
+      --ink-faint: #8a807d;
+      --rule: #322c2a;
+      --rule-strong: #4a4240;
+      --accent: #f2503f;
+      --accent-deep: #ff8175;
+      --accent-wash: #2a1613;
+      color-scheme: dark;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper: #131110;
+    --surface: #1c1918;
+    --surface-deep: #262120;
+    --ink: #f3efed;
+    --ink-muted: #b0a7a4;
+    --ink-faint: #8a807d;
+    --rule: #322c2a;
+    --rule-strong: #4a4240;
+    --accent: #f2503f;
+    --accent-deep: #ff8175;
+    --accent-wash: #2a1613;
+    color-scheme: dark;
+  }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: var(--col);
+    margin-inline: auto;
+    padding: 0 24px 96px;
+  }
+
+  /* ---------- couverture ---------- */
+
+  .cover {
+    padding: 56px 0 40px;
+    border-bottom: 3px solid var(--ink);
+  }
+
+  .flag {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 12px;
+    background: var(--accent);
+    color: #ffffff;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .cover h1 {
+    margin: 22px 0 6px;
+    font-family: var(--font-display);
+    font-size: clamp(2.4rem, 6vw, 3.6rem);
+    font-weight: 700;
+    line-height: 1.04;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  .cover .lede {
+    margin: 0;
+    max-width: 60ch;
+    font-size: 1.15rem;
+    line-height: 1.55;
+    color: var(--ink-muted);
+  }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 32px;
+    margin-top: 28px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-faint);
+  }
+
+  .meta b {
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  /* ---------- sommaire ---------- */
+
+  .toc {
+    margin: 36px 0 0;
+    padding: 22px 26px;
+    background: var(--surface);
+    border-inline-start: 3px solid var(--accent);
+  }
+
+  .toc h2 {
+    margin: 0 0 12px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+
+  .toc ol {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 4px 32px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: toc;
+  }
+
+  .toc li {
+    counter-increment: toc;
+  }
+
+  .toc a {
+    display: flex;
+    gap: 10px;
+    padding: 3px 0;
+    color: var(--ink);
+    text-decoration: none;
+    font-size: 0.95rem;
+  }
+
+  .toc a::before {
+    content: counter(toc, decimal-leading-zero);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent);
+    padding-top: 3px;
+  }
+
+  .toc a:hover {
+    color: var(--accent);
+  }
+
+  /* ---------- sections ---------- */
+
+  section {
+    margin-top: 64px;
+    scroll-margin-top: 20px;
+  }
+
+  .eyebrow {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+
+  h2 {
+    margin: 0 0 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--rule-strong);
+    font-family: var(--font-display);
+    font-size: clamp(1.6rem, 3.4vw, 2.1rem);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+
+  h3 {
+    margin: 34px 0 8px;
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.25;
+    text-wrap: balance;
+  }
+
+  h4 {
+    margin: 22px 0 6px;
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+
+  p, li {
+    max-width: var(--measure);
+  }
+
+  p {
+    margin: 0 0 14px;
+  }
+
+  ul, ol {
+    margin: 0 0 16px;
+    padding-inline-start: 20px;
+  }
+
+  li {
+    margin-bottom: 6px;
+  }
+
+  strong {
+    font-weight: 600;
+  }
+
+  a {
+    color: var(--accent);
+  }
+
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    padding: 1px 5px;
+    background: var(--surface-deep);
+    border-radius: 2px;
+  }
+
+  /* ---------- encadrés ---------- */
+
+  .note {
+    margin: 22px 0;
+    padding: 16px 20px;
+    background: var(--surface);
+    border-inline-start: 3px solid var(--rule-strong);
+  }
+
+  .note p:last-child {
+    margin-bottom: 0;
+  }
+
+  .note.rule {
+    border-inline-start-color: var(--accent);
+    background: var(--accent-wash);
+  }
+
+  .note h4 {
+    margin-top: 0;
+  }
+
+  /* ---------- diagramme de la boucle de publication ---------- */
+
+  .flow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 8px;
+    margin: 24px 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: flow;
+  }
+
+  .flow li {
+    flex: 1 1 150px;
+    max-width: none;
+    margin: 0;
+    padding: 14px 14px 16px;
+    background: var(--surface);
+    border-top: 3px solid var(--accent);
+    position: relative;
+  }
+
+  .flow li b {
+    display: block;
+    font-size: 0.92rem;
+    margin-bottom: 3px;
+  }
+
+  .flow li span {
+    font-size: 0.82rem;
+    line-height: 1.45;
+    color: var(--ink-muted);
+  }
+
+  .flow li::before {
+    counter-increment: flow;
+    content: counter(flow);
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+
+  /* ---------- tableaux ---------- */
+
+  .scroll {
+    overflow-x: auto;
+    margin: 20px 0;
+  }
+
+  table {
+    width: 100%;
+    min-width: 560px;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+
+  caption {
+    text-align: start;
+    padding-bottom: 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+
+  th, td {
+    padding: 9px 12px;
+    text-align: start;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+
+  thead th {
+    border-bottom: 2px solid var(--ink);
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+
+  td.num, th.num {
+    text-align: end;
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  tbody tr:nth-child(odd) td {
+    background: var(--surface);
+  }
+
+  tfoot td {
+    border-top: 2px solid var(--ink);
+    border-bottom: none;
+    font-weight: 700;
+    background: transparent !important;
+  }
+
+  .free {
+    color: var(--ink-faint);
+  }
+
+  /* ---------- bandeau de totaux ---------- */
+
+  .totals {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1px;
+    margin: 24px 0;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+  }
+
+  .totals div {
+    padding: 16px 18px;
+    background: var(--paper);
+  }
+
+  .totals dt {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 6px;
+  }
+
+  .totals dd {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 1.7rem;
+    font-weight: 700;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .totals dd small {
+    display: block;
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    font-weight: 400;
+    color: var(--ink-muted);
+    margin-top: 4px;
+  }
+
+  /* ---------- pastilles d'état ---------- */
+
+  .pill {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .pill.done {
+    background: var(--surface-deep);
+    color: var(--ink);
+  }
+
+  .pill.wip {
+    background: var(--accent);
+    color: #ffffff;
+  }
+
+  .pill.todo {
+    background: transparent;
+    color: var(--ink-faint);
+    box-shadow: inset 0 0 0 1px var(--rule-strong);
+  }
+
+  footer {
+    margin-top: 72px;
+    padding-top: 20px;
+    border-top: 1px solid var(--rule);
+    font-size: 0.82rem;
+    color: var(--ink-faint);
+  }
+
+  footer p {
+    max-width: none;
+  }
+
+  :where(a, summary):focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  /* ---------- impression / export PDF ---------- */
+
+  @page {
+    size: A4;
+    margin: 16mm 14mm;
+  }
+
+  @media print {
+    :root {
+      --paper: #ffffff;
+      --surface: #f5f2f1;
+      --surface-deep: #ebe6e4;
+      --ink: #121010;
+      --ink-muted: #4a4442;
+      --ink-faint: #6d6664;
+      --rule: #ded7d5;
+      --rule-strong: #9d9491;
+      --accent: #c01f11;
+      --accent-deep: #8f1409;
+      --accent-wash: #fdeceb;
+    }
+
+    body {
+      font-size: 10.5pt;
+      line-height: 1.5;
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+
+    .page {
+      max-width: none;
+      padding: 0;
+    }
+
+    .toc {
+      break-inside: avoid;
+    }
+
+    section {
+      break-before: page;
+      margin-top: 0;
+    }
+
+    section:first-of-type {
+      break-before: auto;
+    }
+
+    h2, h3, h4 {
+      break-after: avoid;
+    }
+
+    table, .note, .totals, .flow li, tr {
+      break-inside: avoid;
+    }
+
+    a {
+      color: var(--ink);
+      text-decoration: none;
+    }
+  }
+</style>
+
+<div class="page">
+
+  <header class="cover">
+    <span class="flag">Al-Raqmana24.ma &middot; Dossier de projet</span>
+    <h1>Comment le journal fonctionne, se met en ligne et ce qu&rsquo;il coûte</h1>
+    <p class="lede">
+      Document de référence pour la direction du journal&nbsp;: le fonctionnement du site,
+      la procédure de mise en production, et les charges d&rsquo;exploitation chiffrées.
+      Rédigé pour être lu sans compétence technique, puis imprimé ou exporté en PDF.
+    </p>
+    <div class="meta">
+      <span><b>Projet</b> Al-Raqmana24.ma — <i>Entreprendre, Innover, Digitaliser.</i></span>
+      <span><b>Version</b> 1.0</span>
+      <span><b>Date</b> 30 août 2026</span>
+      <span><b>Statut</b> document de travail</span>
+    </div>
+  </header>
+
+  <nav class="toc" aria-label="Sommaire">
+    <h2>Sommaire</h2>
+    <ol>
+      <li><a href="#produit">Ce que le site est, et ce qu&rsquo;il n&rsquo;est pas</a></li>
+      <li><a href="#architecture">L&rsquo;architecture, en clair</a></li>
+      <li><a href="#publication">La boucle de publication</a></li>
+      <li><a href="#bilingue">Le bilinguisme FR&nbsp;/&nbsp;AR</a></li>
+      <li><a href="#deploiement">La mise en ligne, étape par étape</a></li>
+      <li><a href="#exploitation">Exploitation&nbsp;: sauvegardes, sécurité, pannes</a></li>
+      <li><a href="#charges">Les charges financières</a></li>
+      <li><a href="#etat">Où en est le chantier</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============================================================ 01 -->
+  <section id="produit">
+    <span class="eyebrow">01 — Le produit</span>
+    <h2>Ce que le site est, et ce qu&rsquo;il n&rsquo;est pas</h2>
+
+    <p>
+      Al-Raqmana24 est un <strong>journal en ligne</strong>, pas une vitrine d&rsquo;entreprise.
+      La différence est structurante&nbsp;: une vitrine change trois fois par an, une rédaction
+      publie plusieurs fois par jour et veut voir son article en ligne dans la minute.
+      Toutes les décisions techniques décrites plus loin servent cette boucle-là.
+    </p>
+
+    <h3>Le périmètre éditorial</h3>
+    <p>
+      Six rubriques, issues du cahier des charges, plus le podcast&nbsp;: Économie&nbsp;;
+      Actus juridique&nbsp;; La startup marocaine&nbsp;; Legaltech&nbsp;–&nbsp;Fintech&nbsp;;
+      Décryptage sectoriel&nbsp;; Tendances. Les sous-rubriques sont celles du brief, au mot près.
+      Chaque article porte en plus un <strong>format</strong> (actualité, analyse, décryptage,
+      interview, tribune, infographie) qui sert à la mise en page et au référencement.
+    </p>
+
+    <h3>Les fiches d&rsquo;entités&nbsp;: l&rsquo;avantage durable</h3>
+    <p>
+      Au-delà des articles, le site tient des <strong>fiches permanentes</strong>&nbsp;: startups,
+      entreprises, personnalités, textes juridiques, dossiers, auteurs, mots-clés. Quand un
+      journaliste rattache son article à «&nbsp;telle startup&nbsp;», l&rsquo;article apparaît
+      automatiquement sur la fiche de cette startup. Personne ne maintient ces pages à la main,
+      et elles s&rsquo;enrichissent à chaque publication.
+    </p>
+    <p>
+      C&rsquo;est le point de différenciation du projet&nbsp;: sur le créneau droit du numérique,
+      startups et fintech au Maroc, aucun média ne propose aujourd&rsquo;hui ce maillage. C&rsquo;est
+      lui qui fera venir le trafic de recherche sur la durée, pas les articles d&rsquo;actualité
+      qui, eux, s&rsquo;épuisent en quelques jours.
+    </p>
+
+    <h3>Ce qui est volontairement exclu</h3>
+    <div class="note rule">
+      <h4>Règle&nbsp;: aucun paiement, aucun contenu payant</h4>
+      <p>
+        Le brief dit «&nbsp;s&rsquo;abonner gratuitement&nbsp;». Il n&rsquo;y a donc ni caisse,
+        ni article réservé, ni branchement à un prestataire de paiement. «&nbsp;S&rsquo;abonner&nbsp;»
+        veut dire <strong>newsletter et compte gratuit</strong>. Les emplacements techniques
+        nécessaires à un éventuel virage payant existent dans le code mais restent inertes&nbsp;:
+        rien à réécrire si la décision change un jour, rien à payer aujourd&rsquo;hui.
+      </p>
+    </div>
+    <p>
+      Sont également hors périmètre à ce stade&nbsp;: applications mobiles, régie publicitaire,
+      commentaires des lecteurs, espace annonceurs.
+    </p>
+  </section>
+
+  <!-- ============================================================ 02 -->
+  <section id="architecture">
+    <span class="eyebrow">02 — Architecture</span>
+    <h2>L&rsquo;architecture, en clair</h2>
+
+    <p>
+      Le site tient en <strong>trois briques</strong>, hébergées ensemble, sans dépendance à un
+      éditeur de logiciel&nbsp;:
+    </p>
+
+    <div class="scroll">
+      <table>
+        <caption>Les composants et leur rôle</caption>
+        <thead>
+          <tr>
+            <th scope="col">Brique</th>
+            <th scope="col">Ce que c&rsquo;est</th>
+            <th scope="col">À quoi elle sert</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Le site public</strong></td>
+            <td>Next.js 15 (React&nbsp;19)</td>
+            <td>Ce que voit le lecteur. Les pages sont pré-calculées et servies comme des fichiers, d&rsquo;où la rapidité.</td>
+          </tr>
+          <tr>
+            <td><strong>La régie</strong></td>
+            <td>Payload&nbsp;3, à l&rsquo;adresse <code>/admin</code></td>
+            <td>Là où la rédaction écrit, traduit, programme et publie. Installée sur le même serveur, pas chez un tiers.</td>
+          </tr>
+          <tr>
+            <td><strong>La base</strong></td>
+            <td>PostgreSQL</td>
+            <td>Conserve articles, versions, fiches, inscrits à la newsletter. C&rsquo;est le patrimoine à sauvegarder.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Pourquoi des pages «&nbsp;pré-calculées&nbsp;»</h3>
+    <p>
+      Comme il n&rsquo;y a pas de contenu payant, <strong>toutes les pages sont identiques pour
+      tous les lecteurs</strong>. Elles peuvent donc être calculées une fois puis servies telles
+      quelles. Trois conséquences très concrètes&nbsp;:
+    </p>
+    <ul>
+      <li><strong>Vitesse</strong>&nbsp;: la page part immédiatement, y compris sur un réseau mobile moyen.</li>
+      <li><strong>Résistance aux pics</strong>&nbsp;: un article repris massivement ne fait pas tomber le site, parce qu&rsquo;aucun calcul n&rsquo;est refait à chaque visite.</li>
+      <li><strong>Coût</strong>&nbsp;: un serveur modeste suffit très longtemps. C&rsquo;est ce qui explique les montants de la section&nbsp;07.</li>
+    </ul>
+    <p>
+      Ce que le lecteur voit est donc figé&nbsp;; ce qui est propre à lui — l&rsquo;état de son
+      compte gratuit, par exemple — est chargé après coup, sans casser ce mécanisme.
+    </p>
+
+    <h3>Qui a le droit de faire quoi</h3>
+    <div class="scroll">
+      <table>
+        <caption>Rôles dans la régie</caption>
+        <thead>
+          <tr>
+            <th scope="col">Rôle</th>
+            <th scope="col">Droits</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Administrateur</strong></td><td>Tout, y compris la gestion des comptes et des rôles.</td></tr>
+          <tr><td><strong>Rédacteur en chef</strong></td><td>Écrire, corriger et publier n&rsquo;importe quel contenu.</td></tr>
+          <tr><td><strong>Journaliste</strong></td><td>Écrire et publier.</td></tr>
+          <tr><td><strong>Contributeur</strong></td><td>Écrire uniquement&nbsp;: ses textes restent en brouillon jusqu&rsquo;à validation.</td></tr>
+          <tr><td><strong>Abonné</strong></td><td>Compte lecteur gratuit. Aucun accès à la régie.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Le référencement, intégré et non ajouté</h3>
+    <p>
+      Plans de site classiques et <strong>plan de site Google&nbsp;News</strong> (fenêtre 48&nbsp;heures),
+      données structurées par type de page, flux RSS par rubrique et par langue, images de partage
+      pour les réseaux sociaux, et déclaration explicite des équivalences entre version française
+      et version arabe. Objectif de contrôle avant lancement&nbsp;: score Lighthouse ≥&nbsp;95 en
+      performance, référencement et accessibilité, sur les deux langues.
+    </p>
+  </section>
+
+  <!-- ============================================================ 03 -->
+  <section id="publication">
+    <span class="eyebrow">03 — Exploitation quotidienne</span>
+    <h2>La boucle de publication</h2>
+
+    <p>
+      C&rsquo;est le geste que la rédaction répétera plusieurs fois par jour. Il ne demande
+      aucune intervention technique et ne passe par personne d&rsquo;autre.
+    </p>
+
+    <ol class="flow">
+      <li><b>Rédiger</b><span>Le journaliste écrit dans la régie&nbsp;: titre, chapô, corps, photo, rubrique.</span></li>
+      <li><b>Rattacher</b><span>Il coche les entités citées&nbsp;: startup, entreprise, texte de loi, personnalité.</span></li>
+      <li><b>Relire</b><span>Le brouillon est visible en interne&nbsp;; chaque version est conservée.</span></li>
+      <li><b>Publier</b><span>Un clic. Possibilité de programmer une date de publication.</span></li>
+      <li><b>Diffuser</b><span>Le site régénère l&rsquo;article, la rubrique, l&rsquo;accueil et les fiches liées, dans les deux langues.</span></li>
+      <li><b>En ligne</b><span>Le lecteur et Google&nbsp;News voient la page en quelques secondes.</span></li>
+    </ol>
+
+    <p>
+      L&rsquo;étape&nbsp;5 mérite un mot&nbsp;: c&rsquo;est elle qui distingue ce site d&rsquo;un
+      site «&nbsp;statique&nbsp;» classique. Rien n&rsquo;est reconstruit globalement — seules les
+      pages effectivement touchées par la publication sont rafraîchies. Une correction de coquille
+      à 18&nbsp;h&nbsp;03 est en ligne à 18&nbsp;h&nbsp;03.
+    </p>
+
+    <h3>Les médias</h3>
+    <p>
+      Les photos sont déposées dans la régie, redimensionnées automatiquement et servies au
+      format adapté à l&rsquo;écran du lecteur. Une seule règle éditoriale à tenir&nbsp;:
+      <strong>les droits des images</strong>. Les visuels actuellement visibles sont des photos
+      de démonstration&nbsp;; ils devront être remplacés par des images dont le journal détient
+      les droits, ou issues d&rsquo;une banque sous licence.
+    </p>
+  </section>
+
+  <!-- ============================================================ 04 -->
+  <section id="bilingue">
+    <span class="eyebrow">04 — Langues</span>
+    <h2>Le bilinguisme FR&nbsp;/&nbsp;AR</h2>
+
+    <p>
+      Le site existe en français et en arabe, avec écriture de droite à gauche pour l&rsquo;arabe
+      — mise en miroir complète, et non simple traduction des mots.
+    </p>
+
+    <div class="note rule">
+      <h4>Une décision à connaître&nbsp;: pas de traduction automatique de secours</h4>
+      <p>
+        Si un article n&rsquo;existe qu&rsquo;en français, la version arabe de cette page
+        <strong>n&rsquo;existe pas</strong> — elle répond «&nbsp;page introuvable&nbsp;». C&rsquo;est
+        volontaire. L&rsquo;autre option consisterait à afficher le texte français sur l&rsquo;adresse
+        arabe&nbsp;: Google indexerait alors une page arabe au contenu français, ce qui dégrade
+        durablement le référencement arabe et trompe le lecteur.
+      </p>
+      <p>
+        Conséquence pratique&nbsp;: <strong>la traduction partielle est le cas normal</strong>.
+        Un article peut être FR seul, AR seul, ou les deux. Les listes, l&rsquo;accueil et le
+        sélecteur de langue en tiennent compte&nbsp;: aucun lien ne mène jamais à une page vide.
+      </p>
+    </div>
+
+    <h3>Les adresses arabes</h3>
+    <p>
+      Les articles arabes reçoivent des adresses en arabe (par exemple
+      <code>/ar/اقتصاد/…</code>), ce qui améliore nettement le taux de clic dans les résultats
+      de recherche en arabe.
+    </p>
+    <div class="note">
+      <h4>Point d&rsquo;attention avant lancement</h4>
+      <p>
+        Les libellés et adresses arabes des rubriques sont aujourd&rsquo;hui une <strong>première
+        proposition</strong>, à valider par un responsable éditorial arabophone. Une fois les
+        pages publiées et indexées, changer une adresse impose une redirection permanente et une
+        perte temporaire de référencement. Cette validation est donc à faire <em>avant</em> la
+        mise en ligne, pas après.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============================================================ 05 -->
+  <section id="deploiement">
+    <span class="eyebrow">05 — Mise en ligne</span>
+    <h2>La mise en ligne, étape par étape</h2>
+
+    <h3>L&rsquo;hébergement retenu, et pourquoi</h3>
+    <p>
+      Le cahier des charges évoquait un hébergement mutualisé de type cPanel. <strong>Ce type
+      d&rsquo;hébergement ne peut pas faire tourner ce site</strong>&nbsp;: il n&rsquo;exécute pas
+      Node.js, donc ni la régie, ni la régénération des pages à la publication. La cible
+      recommandée est un <strong>serveur privé virtuel (VPS) chez le même hébergeur</strong>,
+      ce qui permet de conserver le fournisseur, le domaine et la facturation en un seul endroit.
+    </p>
+
+    <div class="scroll">
+      <table>
+        <caption>Options d&rsquo;hébergement</caption>
+        <thead>
+          <tr>
+            <th scope="col">Option</th>
+            <th scope="col">Ce qu&rsquo;on gagne</th>
+            <th scope="col">Ce qu&rsquo;on perd</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>VPS Hostinger + Docker</strong><br><span class="free">recommandée</span></td>
+            <td>Tout au même endroit, coût maîtrisé et prévisible, maîtrise complète des données.</td>
+            <td>Un serveur à administrer&nbsp;: mises à jour et surveillance à assurer.</td>
+          </tr>
+          <tr>
+            <td>Domaine chez Hostinger, application sur Vercel</td>
+            <td>Zéro administration serveur, déploiements automatiques.</td>
+            <td>Facturation en dollars indexée sur le trafic, base de données à héberger ailleurs.</td>
+          </tr>
+          <tr>
+            <td>Site figé sur mutualisé + régie ailleurs</td>
+            <td>Hébergement le moins cher possible.</td>
+            <td><strong>Perte de la publication instantanée</strong>&nbsp;: chaque article impose une reconstruction complète. Rédhibitoire pour un quotidien.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Les neuf étapes de la mise en production</h3>
+    <ol>
+      <li><strong>Réservations préalables</strong>&nbsp;: nom de domaine <code>al-raqmana24.ma</code>, adresses e-mail de la rédaction, comptes des services tiers.</li>
+      <li><strong>Préparation du serveur</strong>&nbsp;: création du VPS, connexion par clé, pare-feu, blocage des tentatives d&rsquo;intrusion, mises à jour de sécurité automatiques.</li>
+      <li><strong>Installation</strong>&nbsp;: les trois briques sont lancées en conteneurs (site, base, serveur d&rsquo;entrée), ce qui rend l&rsquo;installation reproductible à l&rsquo;identique.</li>
+      <li><strong>Certificat de sécurité</strong>&nbsp;: HTTPS activé et renouvelé automatiquement, gratuitement.</li>
+      <li><strong>Secrets et paramètres</strong>&nbsp;: accès à la base, clés des services, adresse du site — stockés sur le serveur, jamais dans le code.</li>
+      <li><strong>Données</strong>&nbsp;: création du schéma, du premier compte administrateur, puis reprise des contenus déjà rédigés.</li>
+      <li><strong>Bascule</strong>&nbsp;: pointage du domaine, redirection de <code>www</code> vers le domaine principal, en-têtes de sécurité.</li>
+      <li><strong>Vérifications</strong>&nbsp;: les deux langues, une rubrique, un article, une fiche, une page inexistante, les plans de site, la déclaration à Search&nbsp;Console, un test de publication de bout en bout, et un contrôle visuel de l&rsquo;arabe.</li>
+      <li><strong>Passation</strong>&nbsp;: guide du rédacteur en français et séance de formation de la rédaction.</li>
+    </ol>
+
+    <h3>Les mises à jour après le lancement</h3>
+    <p>
+      Une modification du site suit toujours le même chemin&nbsp;: envoi du code, construction
+      d&rsquo;une nouvelle version, vérification automatique qu&rsquo;elle répond correctement,
+      puis bascule. <strong>Le site ne s&rsquo;interrompt pas</strong>, et en cas d&rsquo;anomalie
+      le retour à la version précédente est immédiat. À noter&nbsp;: publier un article
+      <em>n&rsquo;est pas</em> une mise à jour du site — cela ne demande aucun déploiement.
+    </p>
+  </section>
+
+  <!-- ============================================================ 06 -->
+  <section id="exploitation">
+    <span class="eyebrow">06 — Continuité de service</span>
+    <h2>Exploitation&nbsp;: sauvegardes, sécurité, pannes</h2>
+
+    <h3>Sauvegardes</h3>
+    <ul>
+      <li><strong>Base de données</strong>&nbsp;: copie quotidienne automatique, conservée hors du serveur. Perte maximale en cas d&rsquo;incident grave&nbsp;: une journée de publication.</li>
+      <li><strong>Photos et documents</strong>&nbsp;: stockés sur un espace dédié, répliqué.</li>
+      <li><strong>Serveur entier</strong>&nbsp;: instantané hebdomadaire inclus dans l&rsquo;offre d&rsquo;hébergement.</li>
+      <li><strong>Code</strong>&nbsp;: intégralement versionné&nbsp;; le site est réinstallable de zéro sur un serveur neuf.</li>
+    </ul>
+    <p>
+      Une sauvegarde qui n&rsquo;a jamais été restaurée n&rsquo;est pas une sauvegarde&nbsp;:
+      un test de restauration est prévu à la mise en ligne, puis une fois par an.
+    </p>
+
+    <h3>Sécurité</h3>
+    <ul>
+      <li>Connexion au serveur par clé uniquement, jamais par mot de passe.</li>
+      <li>Régie et interfaces techniques exclues de l&rsquo;indexation par les moteurs.</li>
+      <li>En-têtes de sécurité standard, HTTPS obligatoire sur tout le site.</li>
+      <li>Comptes nominatifs pour chaque membre de la rédaction — jamais de compte partagé.</li>
+      <li>Données personnelles des inscrits&nbsp;: consentement horodaté, désinscription en un clic, conformité à la loi&nbsp;09-08 (déclaration&nbsp;CNDP à prévoir).</li>
+    </ul>
+
+    <h3>Surveillance</h3>
+    <p>
+      Contrôle de disponibilité toutes les minutes avec alerte, et statistiques d&rsquo;audience
+      respectueuses de la vie privée (sans cookie publicitaire, sans bandeau de consentement à
+      gérer). Les journaux techniques sont conservés sur le serveur.
+    </p>
+  </section>
+
+  <!-- ============================================================ 07 -->
+  <section id="charges">
+    <span class="eyebrow">07 — Budget d&rsquo;exploitation</span>
+    <h2>Les charges financières</h2>
+
+    <p>
+      Deux scénarios&nbsp;: le <strong>démarrage</strong>, valable dès la mise en ligne et
+      jusqu&rsquo;à environ 10&nbsp;000 visites par mois&nbsp;; le <strong>régime de croisière</strong>,
+      à partir d&rsquo;une audience installée et d&rsquo;un rythme de newsletter soutenu. Montants
+      hors&nbsp;TVA, convertis à titre indicatif sur la base de 1&nbsp;USD ≈ 10&nbsp;MAD.
+    </p>
+
+    <h3>Scénario A — Démarrage</h3>
+    <div class="scroll">
+      <table>
+        <caption>Charges récurrentes au lancement</caption>
+        <thead>
+          <tr>
+            <th scope="col">Poste</th>
+            <th scope="col">Fournisseur / offre</th>
+            <th scope="col" class="num">MAD&nbsp;/&nbsp;mois</th>
+            <th scope="col" class="num">MAD&nbsp;/&nbsp;an</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Nom de domaine <code>.ma</code></td>
+            <td>Registrar agréé ANRT — <span class="free">tarif à confirmer</span></td>
+            <td class="num">21</td>
+            <td class="num">250</td>
+          </tr>
+          <tr>
+            <td>Serveur</td>
+            <td>Hostinger VPS KVM&nbsp;2 — 2&nbsp;vCPU, 8&nbsp;Go, 100&nbsp;Go NVMe (8,99&nbsp;$)</td>
+            <td class="num">90</td>
+            <td class="num">1&nbsp;080</td>
+          </tr>
+          <tr>
+            <td>Base de données</td>
+            <td>PostgreSQL sur le même serveur</td>
+            <td class="num">0</td>
+            <td class="num">0</td>
+          </tr>
+          <tr>
+            <td>Stockage des photos</td>
+            <td>Cloudflare R2 — 10&nbsp;Go gratuits</td>
+            <td class="num">0</td>
+            <td class="num">0</td>
+          </tr>
+          <tr>
+            <td>Certificat HTTPS</td>
+            <td>Let&rsquo;s Encrypt</td>
+            <td class="num">0</td>
+            <td class="num">0</td>
+          </tr>
+          <tr>
+            <td>Newsletter</td>
+            <td>Brevo, offre gratuite — env. 300&nbsp;envois&nbsp;/&nbsp;jour</td>
+            <td class="num">0</td>
+            <td class="num">0</td>
+          </tr>
+          <tr>
+            <td>Sauvegardes</td>
+            <td>Instantanés hebdomadaires inclus + copie quotidienne</td>
+            <td class="num">0</td>
+            <td class="num">0</td>
+          </tr>
+          <tr>
+            <td>Statistiques d&rsquo;audience</td>
+            <td>Plausible Starter (9&nbsp;$) — <span class="free">ou auto-hébergé, 0&nbsp;MAD</span></td>
+            <td class="num">90</td>
+            <td class="num">1&nbsp;080</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="2">Total scénario A</td>
+            <td class="num">201</td>
+            <td class="num">2&nbsp;410</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <dl class="totals">
+      <div>
+        <dt>Démarrage</dt>
+        <dd>2&nbsp;410&nbsp;MAD<small>par an, tout compris</small></dd>
+      </div>
+      <div>
+        <dt>Version minimale</dt>
+        <dd>1&nbsp;330&nbsp;MAD<small>par an, statistiques auto-hébergées</small></dd>
+      </div>
+      <div>
+        <dt>Après 24 mois</dt>
+        <dd>3&nbsp;130&nbsp;MAD<small>par an, fin du tarif promotionnel du serveur</small></dd>
+      </div>
+    </dl>
+
+    <div class="note">
+      <p>
+        Le prix du serveur (8,99&nbsp;$) est un tarif d&rsquo;engagement sur 24&nbsp;mois&nbsp;;
+        au renouvellement il passe à 14,99&nbsp;$&nbsp;/&nbsp;mois, soit environ 150&nbsp;MAD.
+        C&rsquo;est la seule hausse mécanique à anticiper dans le scénario A.
+      </p>
+    </div>
+
+    <h3>Scénario B — Régime de croisière</h3>
+    <p>
+      Audience installée (ordre de grandeur&nbsp;: 50&nbsp;000 à 150&nbsp;000 visites&nbsp;/&nbsp;mois),
+      newsletter au-delà de l&rsquo;offre gratuite, podcast diffusé sur les plateformes.
+    </p>
+    <div class="scroll">
+      <table>
+        <caption>Charges récurrentes en régime établi</caption>
+        <thead>
+          <tr>
+            <th scope="col">Poste</th>
+            <th scope="col">Offre visée</th>
+            <th scope="col" class="num">MAD&nbsp;/&nbsp;mois</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Nom de domaine</td><td>Identique</td><td class="num">21</td></tr>
+          <tr><td>Serveur</td><td>VPS KVM&nbsp;4 — 4&nbsp;vCPU, 16&nbsp;Go (12,99&nbsp;$&nbsp;→&nbsp;28,99&nbsp;$)</td><td class="num">130 – 290</td></tr>
+          <tr><td>Base de données</td><td>Neon Launch, base managée avec restauration à la minute près</td><td class="num">100</td></tr>
+          <tr><td>Stockage des photos</td><td>R2 au-delà de 10&nbsp;Go</td><td class="num">5 – 10</td></tr>
+          <tr><td>Newsletter</td><td>Brevo payant — <span class="free">selon volume, à confirmer</span></td><td class="num">100 – 210</td></tr>
+          <tr><td>Statistiques d&rsquo;audience</td><td>Plausible Growth (14&nbsp;$)</td><td class="num">140</td></tr>
+          <tr><td>Hébergement du podcast</td><td>Ausha ou Acast — <span class="free">à arbitrer</span></td><td class="num">120 – 320</td></tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="2">Total scénario B</td>
+            <td class="num">616 – 1&nbsp;141</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <p>
+      Soit une fourchette annuelle de <strong>7&nbsp;400 à 13&nbsp;700&nbsp;MAD</strong>. Le passage
+      du scénario A au scénario B est progressif&nbsp;: chaque poste se déclenche à son propre
+      seuil, et aucun ne se déclenche sans signal préalable (audience, volume d&rsquo;envois,
+      espace disque).
+    </p>
+
+    <h3>Coûts ponctuels</h3>
+    <div class="scroll">
+      <table>
+        <caption>À la mise en route</caption>
+        <thead>
+          <tr>
+            <th scope="col">Poste</th>
+            <th scope="col">Commentaire</th>
+            <th scope="col" class="num">Montant</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Réalisation du site (lots&nbsp;1 à&nbsp;8)</td>
+            <td>Prestation de développement, intégration, mise en ligne et formation</td>
+            <td class="num">à compléter</td>
+          </tr>
+          <tr>
+            <td>Déclaration&nbsp;CNDP</td>
+            <td>Formalité loi&nbsp;09-08 pour le fichier des inscrits</td>
+            <td class="num">à confirmer</td>
+          </tr>
+          <tr>
+            <td>Banque d&rsquo;images</td>
+            <td>Seulement si la rédaction ne produit pas ses visuels</td>
+            <td class="num">variable</td>
+          </tr>
+          <tr>
+            <td>Adresses e-mail de la rédaction</td>
+            <td>Souvent incluses avec le domaine&nbsp;; sinon offre professionnelle</td>
+            <td class="num">à confirmer</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Ce qui fait bouger la facture — et ce qui ne la fait pas bouger</h3>
+    <ul>
+      <li><strong>Le nombre d&rsquo;articles n&rsquo;a aucun effet.</strong> Publier 5 ou 50 fois par jour ne change pas un centime.</li>
+      <li><strong>Le trafic a un effet tardif.</strong> Les pages étant pré-calculées, le serveur ne sature qu&rsquo;à une audience largement supérieure à celle des premiers mois.</li>
+      <li><strong>Les images pèsent, à la longue.</strong> Le poste stockage progresse avec l&rsquo;archive photo, pas avec le nombre de visites.</li>
+      <li><strong>La newsletter est le poste le plus sensible.</strong> Il dépend du nombre d&rsquo;inscrits et de la fréquence d&rsquo;envoi, pas du site.</li>
+      <li><strong>Aucune licence logicielle.</strong> Ni le site, ni la régie, ni la base de données ne se paient&nbsp;: tout est libre. Il n&rsquo;y a pas non plus de commission sur audience, puisqu&rsquo;il n&rsquo;y a pas de paiement en ligne.</li>
+    </ul>
+
+    <div class="note">
+      <h4>Origine des montants</h4>
+      <p>
+        Tarifs relevés le 30&nbsp;août&nbsp;2026 sur les pages publiques de Hostinger, Neon et
+        Plausible. Les montants Brevo, le tarif du domaine <code>.ma</code>, l&rsquo;hébergement
+        du podcast et les frais de messagerie <strong>n&rsquo;ont pas pu être vérifiés
+        automatiquement</strong> et sont donnés en ordre de grandeur&nbsp;: à confirmer avant
+        tout engagement. S&rsquo;ajoutent, le cas échéant, la TVA à&nbsp;20&nbsp;% et les frais
+        de change des fournisseurs facturant en dollars ou en euros.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============================================================ 08 -->
+  <section id="etat">
+    <span class="eyebrow">08 — Avancement</span>
+    <h2>Où en est le chantier</h2>
+
+    <p>
+      Le projet est découpé en huit lots. Un lot n&rsquo;est considéré comme terminé que
+      s&rsquo;il passe les contrôles automatiques et un test réel en conditions de production.
+    </p>
+
+    <div class="scroll">
+      <table>
+        <caption>État des lots</caption>
+        <thead>
+          <tr>
+            <th scope="col">Lot</th>
+            <th scope="col">Contenu</th>
+            <th scope="col">État</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>Fondations techniques, bilingue FR&nbsp;/&nbsp;AR</td><td><span class="pill wip">En cours</span></td></tr>
+          <tr><td>2</td><td>Modèle de contenu&nbsp;: 13 collections, rôles, jeu de données</td><td><span class="pill wip">En cours</span></td></tr>
+          <tr><td>3</td><td>Pages éditoriales&nbsp;: accueil, rubriques, article</td><td><span class="pill wip">Maquette</span></td></tr>
+          <tr><td>4</td><td>Fiches d&rsquo;entités</td><td><span class="pill wip">Maquette</span></td></tr>
+          <tr><td>5</td><td>Podcast</td><td><span class="pill todo">À faire</span></td></tr>
+          <tr><td>6</td><td>Newsletter, compte gratuit, pages institutionnelles</td><td><span class="pill wip">Maquette</span></td></tr>
+          <tr><td>7</td><td>Référencement et performance</td><td><span class="pill todo">À faire</span></td></tr>
+          <tr><td>8</td><td>Déploiement et passation</td><td><span class="pill todo">À faire</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      «&nbsp;Maquette&nbsp;» signifie&nbsp;: les pages existent, sont navigables dans les deux
+      langues et sont validables par le client, mais elles affichent aujourd&rsquo;hui un
+      <strong>contenu de démonstration</strong>. Le branchement sur la base de données réelle est
+      la prochaine étape.
+    </p>
+
+    <h3>Ce qui bloque, et ce qui est attendu du client</h3>
+    <div class="scroll">
+      <table>
+        <caption>Décisions et éléments en attente</caption>
+        <thead>
+          <tr>
+            <th scope="col">Sujet</th>
+            <th scope="col">Décision attendue</th>
+            <th scope="col">Effet si tardif</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Accès à la base de données</td>
+            <td>Fournir la chaîne de connexion du serveur PostgreSQL</td>
+            <td><strong>Bloquant</strong>&nbsp;: la régie ne peut pas démarrer, les lots&nbsp;1 et&nbsp;2 restent ouverts</td>
+          </tr>
+          <tr>
+            <td>Hébergement</td>
+            <td>Valider le VPS plutôt que le mutualisé</td>
+            <td>Bloquant pour le lot&nbsp;8</td>
+          </tr>
+          <tr>
+            <td>Rubriques en arabe</td>
+            <td>Valider libellés et adresses par un responsable arabophone</td>
+            <td>Après publication, tout changement coûte une redirection permanente</td>
+          </tr>
+          <tr>
+            <td>Podcast</td>
+            <td>Choisir la plateforme de diffusion</td>
+            <td>Décale le lot&nbsp;5</td>
+          </tr>
+          <tr>
+            <td>Photos et logo</td>
+            <td>Fournir les visuels dont le journal détient les droits</td>
+            <td>Le site ne peut pas être lancé avec les images de démonstration</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    <p>
+      Al-Raqmana24.ma — dossier technique, déploiement et charges. Version&nbsp;1.0 du
+      30&nbsp;août&nbsp;2026. Document de travail&nbsp;: les montants marqués «&nbsp;à
+      confirmer&nbsp;» doivent être vérifiés auprès des fournisseurs avant tout engagement.
+    </p>
+  </footer>
+
+</div>

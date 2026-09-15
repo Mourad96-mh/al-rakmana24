@@ -40,6 +40,20 @@
   font-size: var(--step--1);
 }
 
+/* ---------- main column ---------- */
+
+/*
+ * The rubrique rivers now share the row with the advertising rail, so the space
+ * they get no longer follows the viewport: at 1240px of viewport the column is
+ * only ~870px wide. Their breakpoints are therefore CONTAINER queries against
+ * this element — the hero, which spans the full container, keeps viewport ones.
+ */
+.mainCol {
+  min-inline-size: 0;
+  container-type: inline-size;
+  container-name: main;
+}
+
 /* ---------- rubrique river ---------- */
 
 .river {
@@ -109,7 +123,23 @@
     border-block-start: 2px solid var(--rule);
     padding-block-start: var(--space-m);
   }
+}
 
+@media (max-width: 760px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-m);
+  }
+
+  .heroSecondary {
+    padding-inline-start: 0;
+    border-inline-start: 0;
+    border-block-start: 1px solid var(--border);
+    padding-block-start: var(--space-m);
+  }
+}
+
+@container main (max-width: 800px) {
   .river {
     grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
   }
@@ -124,23 +154,16 @@
   }
 }
 
-@media (max-width: 760px) {
-  .hero,
+@container main (max-width: 560px) {
   .river {
     grid-template-columns: minmax(0, 1fr);
     gap: var(--space-m);
   }
 
-  .heroSecondary,
   .riverRest > *,
   .mostRead > * {
     padding-inline-start: 0;
     border-inline-start: 0;
-  }
-
-  .heroSecondary {
-    border-block-start: 1px solid var(--border);
-    padding-block-start: var(--space-m);
   }
 
   .mostRead {

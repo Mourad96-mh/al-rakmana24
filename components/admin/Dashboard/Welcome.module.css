@@ -1,0 +1,295 @@
+/*
+ * Dashboard header inside the Payload admin.
+ *
+ * Colours come from Payload's own theme variables (--theme-*), never from the
+ * site tokens: the admin has a dark mode the newsroom will use, and hardcoding
+ * the journal's white background here would make half the screen unreadable in
+ * it. The one exception is the brand red, which is the point.
+ */
+
+.welcome {
+  margin-block-end: var(--base, 1.25rem);
+  padding-block-end: calc(var(--base, 1.25rem) * 1.5);
+  border-block-end: 1px solid var(--theme-elevation-150);
+}
+
+.greeting {
+  margin: 0 0 0.25rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.intro {
+  margin: 0 0 1.25rem;
+  max-inline-size: 62ch;
+  color: var(--theme-elevation-600);
+}
+
+/* ---------- quick actions ---------- */
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-block-end: 2rem;
+}
+
+.action {
+  padding: 0.6rem 1.1rem;
+  border: 1px solid #d92415;
+  background: #d92415;
+  color: #ffffff;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.action:hover,
+.action:focus-visible {
+  background: #a4180c;
+  border-color: #a4180c;
+  color: #ffffff;
+}
+
+/* Only the first action is the primary one — publishing an article. */
+.action:not(:first-child) {
+  background: transparent;
+  border-color: var(--theme-elevation-250);
+  color: var(--theme-elevation-800);
+}
+
+.action:not(:first-child):hover,
+.action:not(:first-child):focus-visible {
+  border-color: #d92415;
+  color: #d92415;
+  background: transparent;
+}
+
+/* ---------- counters ---------- */
+
+.sectionTitle {
+  margin: 0 0 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--theme-elevation-500);
+}
+
+[dir='rtl'] .sectionTitle {
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  gap: 0.75rem;
+  margin-block-end: 2rem;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--theme-elevation-150);
+  background: var(--theme-elevation-50);
+  text-decoration: none;
+  color: inherit;
+}
+
+.stat:hover {
+  border-color: #d92415;
+}
+
+.statValue {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: lining-nums tabular-nums;
+  /* A count is a number, not a phrase: keep it LTR under the Arabic admin. */
+  direction: ltr;
+  unicode-bidi: isolate;
+  align-self: start;
+}
+
+.statLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.statHint {
+  font-size: 0.75rem;
+  color: var(--theme-elevation-500);
+}
+
+/* ---------- attention ---------- */
+
+.alerts {
+  margin: 0 0 1.5rem;
+  padding-inline-start: 1.1rem;
+  color: var(--theme-elevation-700);
+}
+
+.alerts li {
+  margin-block-end: 0.35rem;
+}
+
+.ok {
+  margin: 0 0 1.5rem;
+  color: var(--theme-elevation-500);
+}
+
+.note {
+  margin: 0;
+  padding-inline-start: 0.9rem;
+  border-inline-start: 3px solid var(--theme-elevation-200);
+  max-inline-size: 70ch;
+  color: var(--theme-elevation-500);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+/* ---------- worklists: traductions manquantes + brouillons ---------- */
+
+/*
+ * auto-fit rather than a media query: the admin's content column narrows when
+ * the sidebar is pinned open, which no viewport breakpoint can see.
+ */
+.columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: 1.5rem 2rem;
+  margin-block-end: 2rem;
+}
+
+/* Without this a long headline in a grid track refuses to shrink. */
+.panel {
+  min-inline-size: 0;
+}
+
+.panelIntro {
+  margin: 0 0 0.75rem;
+  max-inline-size: 52ch;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--theme-elevation-500);
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-block-start: 1px solid var(--theme-elevation-150);
+}
+
+.listLink {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.6rem 0;
+  border-block-end: 1px solid var(--theme-elevation-150);
+  text-decoration: none;
+  color: inherit;
+}
+
+.listLink:hover .listTitle,
+.listLink:focus-visible .listTitle {
+  color: #d92415;
+}
+
+/*
+ * One line, ellipsised. A headline is long and the panel is narrow; wrapping
+ * turns a five-row worklist into a wall and the badge stops lining up.
+ */
+.listTitle {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.listMeta {
+  flex: 0 0 auto;
+  font-size: 0.75rem;
+  color: var(--theme-elevation-500);
+  /* A date is digits: keep it LTR under the Arabic admin. */
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+.badge {
+  flex: 0 0 auto;
+  padding: 0.15rem 0.5rem;
+  border: 1px solid currentcolor;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/*
+ * The two gaps are not equally urgent for this newsroom. The site is written in
+ * French first, so a missing Arabic version is the common, expected backlog —
+ * amber. A missing FRENCH version means an Arabic-only article is invisible to
+ * the majority of the readership, which is rarer and worth the brand red.
+ */
+.badge[data-missing='ar'] {
+  color: #9a6400;
+}
+
+.badge[data-missing='fr'] {
+  color: #d92415;
+}
+
+.more {
+  display: inline-block;
+  margin-block-start: 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #d92415;
+  text-decoration: none;
+}
+
+.more:hover,
+.more:focus-visible {
+  text-decoration: underline;
+}
+
+/*
+ * Dark mode for the worklist accents.
+ *
+ * The two selectors are not redundant: the real admin themes itself on
+ * `html[data-theme]`, while the offline preview flips a wrapper attribute
+ * instead (app/(preview)/payload-theme.css explains why). A rule written for
+ * only one of them looks correct in whichever surface you happened to check.
+ *
+ * The light values are too dark to carry 11px bold type on Payload's near-black
+ * panel — #9a6400 lands around 2:1 there. These are the same two hues lifted
+ * until they clear AA for small text against --theme-elevation-0 in dark.
+ */
+
+[data-theme='dark'] .badge[data-missing='ar'],
+[data-preview-theme='dark'] .badge[data-missing='ar'] {
+  color: #e3a53f;
+}
+
+[data-theme='dark'] .badge[data-missing='fr'],
+[data-preview-theme='dark'] .badge[data-missing='fr'] {
+  color: #ff7a6d;
+}
+
+[data-theme='dark'] .more,
+[data-preview-theme='dark'] .more {
+  color: #ff7a6d;
+}
+
+[data-theme='dark'] .listLink:hover .listTitle,
+[data-theme='dark'] .listLink:focus-visible .listTitle,
+[data-preview-theme='dark'] .listLink:hover .listTitle,
+[data-preview-theme='dark'] .listLink:focus-visible .listTitle {
+  color: #ff7a6d;
+}

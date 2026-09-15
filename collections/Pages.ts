@@ -6,6 +6,7 @@ import {
   editorialHooks,
   createdByField,
 } from '../lib/payload-access'
+import { revalidationHooks } from '../lib/revalidate'
 import { slugField } from '../fields/slugField'
 import { seoField } from '../fields/seoField'
 
@@ -43,7 +44,7 @@ export const Pages: CollectionConfig = {
     update: isEditorial,
     delete: isAdmin,
   },
-  hooks: editorialHooks,
+  hooks: { ...editorialHooks, ...revalidationHooks },
   fields: [
     {
       name: 'title',

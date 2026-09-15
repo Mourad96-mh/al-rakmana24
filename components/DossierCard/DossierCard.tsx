@@ -2,6 +2,7 @@ import Image from 'next/image'
 import type { DossierSummary } from '@/lib/content-types'
 import { resolveMedia, isPlaceholder } from '@/lib/media'
 import type { Locale } from '@/lib/rubriques'
+import * as links from '@/lib/links'
 import styles from './DossierCard.module.css'
 
 /**
@@ -15,11 +16,11 @@ export function DossierCard({
   dossier: DossierSummary
   locale: Locale
 }) {
-  const image = resolveMedia(dossier.image, dossier.slug, 'card')
+  const image = resolveMedia(dossier.image, dossier.slug, 'card', locale)
 
   return (
     <article className={styles.card}>
-      <a className={styles.link} href={`/${locale}/dossiers/${dossier.slug}`}>
+      <a className={styles.link} href={links.dossier(locale, dossier.slug)}>
         <Image
           src={image.src}
           alt=""

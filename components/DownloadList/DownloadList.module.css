@@ -1,0 +1,160 @@
+/*
+ * Download rows. Newspaper hairlines rather than cards: this is a document
+ * index, and it must read as one whether it holds four items or forty.
+ */
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-block-start: 1px solid var(--border);
+}
+
+.item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-s);
+  padding-block: var(--space-s);
+  border-block-end: 1px solid var(--border);
+}
+
+.body {
+  flex: 1 1 22rem;
+  min-inline-size: 0;
+}
+
+.title {
+  margin: 0 0 var(--space-3xs);
+  font-size: var(--step-1);
+  line-height: 1.25;
+}
+
+.titleLink {
+  text-decoration: none;
+}
+
+.titleLink:hover {
+  text-decoration: underline;
+}
+
+.description {
+  margin: 0 0 var(--space-3xs);
+  max-inline-size: 62ch;
+  color: var(--ink-muted);
+  font-size: var(--step--1);
+  line-height: 1.5;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3xs) var(--space-xs);
+  margin: 0;
+  color: var(--ink-faint);
+  font-family: var(--font-sans);
+  font-size: var(--step--1);
+}
+
+[dir='rtl'] .meta {
+  font-family: var(--font-arabic);
+}
+
+/* ---------- the button ---------- */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  flex: 0 0 auto;
+  padding: var(--space-2xs) var(--space-s);
+  border: 1px solid var(--ink);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  text-decoration: none;
+}
+
+[dir='rtl'] .button {
+  font-family: var(--font-arabic);
+}
+
+.button:hover {
+  background: var(--ink);
+  color: #ffffff;
+}
+
+/*
+ * Download glyph: an arrow pointing DOWN onto a baseline.
+ *
+ * Physical `left` / `border-right` on purpose — the one exception règle d'or #3
+ * allows. The arrowhead is drawn from two borders of a rotated square, so under
+ * `dir="rtl"` the logical version picks the other two borders and the head comes
+ * out pointing up-left. Down is down in both scripts.
+ */
+.icon {
+  position: relative;
+  inline-size: 0.85rem;
+  block-size: 0.95rem;
+  flex: 0 0 auto;
+  border-bottom: 2px solid currentColor;
+}
+
+.icon::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  margin-left: -1px;
+  width: 2px;
+  height: 0.55rem;
+  background: currentColor;
+}
+
+.icon::after {
+  content: '';
+  position: absolute;
+  top: 0.32rem;
+  left: 50%;
+  margin-left: -0.25rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  transform-origin: center;
+}
+
+.buttonText {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.buttonLabel {
+  font-size: var(--step--1);
+  font-weight: 700;
+}
+
+.fileMeta {
+  color: var(--ink-faint);
+  font-size: 0.6875rem;
+  font-variant-numeric: lining-nums;
+}
+
+.button:hover .fileMeta {
+  color: #d6d6d6;
+}
+
+.empty {
+  color: var(--ink-muted);
+  font-size: var(--step--1);
+}
+
+/* Panel variant: the button spans the identity column of a legal-text hub. */
+.blockButton {
+  inline-size: 100%;
+  justify-content: center;
+  margin-block-start: var(--space-s);
+}

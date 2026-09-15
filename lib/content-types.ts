@@ -18,7 +18,7 @@ export type ArticleFormat =
   | 'infographie'
 
 export interface ImageRef {
-  /** Path or URL. Placeholder today, Payload Media URL after Lot 2. */
+  /** Path or URL. Resolved from public/photos today, a Payload Media URL later. */
   src: string
   alt: string
   width: number
@@ -26,10 +26,25 @@ export interface ImageRef {
   credit?: string
 }
 
+/**
+ * What CONTENT declares: `src` is a real upload (a Payload Media URL), the rest
+ * are overrides. Resolved by `resolveMedia()`, which falls back to the on-brand
+ * placeholder when there is no `src`.
+ */
+export interface ImageInput {
+  src?: string
+  alt?: string
+  width?: number
+  height?: number
+  credit?: string
+}
+
 export interface AuthorRef {
   name: string
   slug: string
 }
+
+/* ------------------------------------------------------------------ articles */
 
 export interface ArticleSummary {
   id: string
@@ -42,12 +57,43 @@ export interface ArticleSummary {
   format: ArticleFormat
   publishedAt: string
   author?: AuthorRef
-  image?: ImageRef
+  image?: ImageInput
   /** Dormant seam — always 'public' until the client asks otherwise (règle d'or #1). */
   accessLevel: 'public' | 'metered' | 'premium'
   /** Locales this article genuinely exists in (règle d'or #2: no silent fallback). */
   locales: readonly Locale[]
 }
+
+/**
+ * A rich-text body, kept deliberately small: paragraph / heading / quote / list
+ * / callout is everything the demo articles need, and it maps cleanly onto the
+ * Lexical nodes Payload will produce in Lot 3.
+ */
+export type BodyBlock =
+  | { type: 'paragraph'; text: string }
+  | { type: 'heading'; text: string }
+  | { type: 'quote'; text: string; attribution?: string }
+  | { type: 'list'; items: readonly string[] }
+  | { type: 'callout'; title: string; text: string }
+
+export interface EntityRef {
+  /** Which hub collection this points at — decides the URL segment. */
+  kind: EntityKind
+  slug: string
+  name: string
+}
+
+export interface Article extends ArticleSummary {
+  body: readonly BodyBlock[]
+  /** Entity hubs mentioned by this article — the SEO moat is built from these. */
+  entities: readonly EntityRef[]
+  tags: readonly { slug: string; label: string }[]
+  dossier?: { slug: string; title: string }
+  /** Minutes, computed from the body at build time. */
+  readingMinutes: number
+}
+
+/* ------------------------------------------------------------------- listings */
 
 export interface TickerItem {
   id: string
@@ -62,8 +108,233 @@ export interface DossierSummary {
   slug: string
   title: string
   kicker: string
-  image?: ImageRef
+  image?: ImageInput
 }
+
+export interface Dossier extends DossierSummary {
+  intro: string
+  articles: readonly ArticleSummary[]
+}
+
+export interface AuthorSummary {
+  id: string
+  slug: string
+  name: string
+  role: string
+  /**
+   * Carried on the SUMMARY, not only on the full author: « La rédaction »
+   * lists every byline with its bio, and pulling one document per author to
+   * get it would be a dozen round-trips for a page that already has them all.
+   */
+  bio: string
+  image?: ImageInput
+}
+
+export interface Author extends AuthorSummary {
+  email?: string
+  articles: readonly ArticleSummary[]
+}
+
+export interface PodcastSummary {
+  id: string
+  slug: string
+  title: string
+  excerpt: string
+  /**
+   * Episode number, shown as the kicker. OPTIONAL because `numero` is optional
+   * in `collections/Podcasts.ts` — a bonus episode or a pilot has no number,
+   * and rendering « Épisode undefined » is worse than rendering no kicker.
+   */
+  episode?: number
+  publishedAt: string
+  /** Runtime in minutes. Optional for the same reason as `episode`. */
+  duration?: number
+  guest?: string
+  image?: ImageInput
+  /**
+   * Whether this episode has a player at all. On the SUMMARY so the index can
+   * say « aucun enregistrement n'est encore disponible » only while it is true
+   * — the notice corrects itself the day the client chooses an audio host,
+   * instead of staying on the page as a lie.
+   */
+  hasAudio: boolean
+}
+
+export interface PodcastEpisode extends PodcastSummary {
+  body: readonly BodyBlock[]
+  /**
+   * The audio host's embed URL (Ausha / Acast). The audio is NEVER served from
+   * our origin — CLAUDE.md §6 and collections/Podcasts.ts. Absent while the
+   * client has not chosen a host, and the page says so rather than rendering a
+   * dead player.
+   */
+  embedUrl?: string
+  /**
+   * Optional, and the only part of an episode a search engine can read — the
+   * audio is opaque to it. Rendered under the episode notes when present.
+   */
+  transcript?: readonly BodyBlock[]
+  locales: readonly Locale[]
+}
+
+/* -------------------------------------------------------------------- vidéos */
+
+/**
+ * Video is EMBEDDED, never hosted here — same reasoning as the podcast audio
+ * (collections/Podcasts.ts): a KVM VPS cannot serve video, and one popular clip
+ * would eat the month's bandwidth. We keep the provider id and the editorial
+ * material around it.
+ */
+export type VideoProvider = 'youtube' | 'vimeo'
+
+export interface VideoSummary {
+  id: string
+  /** Provider id, not a full URL: `dQw4w9WgXcQ`, `76979871`. */
+  videoId: string
+  provider: VideoProvider
+  title: string
+  /** Small label above the title — rubrique, série, format. */
+  kicker?: string
+  publishedAt: string
+  /** Runtime in seconds; shown as m:ss on the thumbnail. */
+  duration?: number
+  /** Cover frame. Falls back to the on-brand placeholder like everything else. */
+  image?: ImageInput
+}
+
+/* --------------------------------------------------------- téléchargements */
+
+/**
+ * A downloadable file. `sizeBytes` and `ext` are stored, not inferred at render
+ * time: the reader must be able to see what a link will cost BEFORE clicking it
+ * (a 12 MB PDF on a Moroccan 3G connection is a decision, not a detail).
+ */
+export interface DownloadFile {
+  url: string
+  /** Lowercase, no dot: pdf, docx, xlsx, zip. */
+  ext: string
+  sizeBytes: number
+}
+
+/**
+ * Two download libraries, kept SEPARATE at the client's request:
+ *
+ *   1. `DocumentSummary` — the practical library: contrats types, attestations,
+ *      études, synthèses. Our own material, drafted by the newsroom.
+ *   2. the legal texts — official texts (loi, décret, arrêté…), which are NOT a
+ *      second corpus: they hang off the existing `textes-juridiques` entity hub,
+ *      via `EntitySummary.file`. One text, one URL, one page, whether the reader
+ *      arrives to read the summary or to download the PDF.
+ */
+export type DocumentCategory = 'contrat' | 'attestation' | 'etude' | 'synthese' | 'autre'
+
+/** Display order of the sections on the documents page. */
+export const DOCUMENT_CATEGORIES: readonly DocumentCategory[] = [
+  'contrat',
+  'attestation',
+  'etude',
+  'synthese',
+  'autre',
+]
+
+export const DOCUMENT_CATEGORY_LABELS: Record<DocumentCategory, Record<Locale, string>> = {
+  contrat: { fr: 'Contrats types', ar: 'عقود نموذجية' },
+  attestation: { fr: 'Attestations & formulaires', ar: 'شهادات ونماذج' },
+  etude: { fr: 'Études', ar: 'دراسات' },
+  synthese: { fr: 'Synthèses', ar: 'خلاصات' },
+  autre: { fr: 'Autres documents', ar: 'وثائق أخرى' },
+}
+
+export interface DocumentSummary {
+  id: string
+  slug: string
+  title: string
+  description: string
+  categorie: DocumentCategory
+  publishedAt: string
+  file: DownloadFile
+}
+
+export interface TagSummary {
+  slug: string
+  label: string
+  count: number
+}
+
+/* -------------------------------------------------------------------- search */
+
+/** One row of the client-side search island's corpus (components/SearchBox). */
+export interface SearchDoc {
+  slug: string
+  title: string
+  excerpt: string
+  rubrique: string
+  publishedAt: string
+  /** Pre-lowercased haystack, so the client filter does no work per keystroke. */
+  haystack: string
+}
+
+/* --------------------------------------------------------------- entity hubs */
+
+export type EntityKind = 'startups' | 'entreprises' | 'personnalites' | 'textes-juridiques'
+
+/** URL segment per hub — one place, so a rename cannot drift between pages. */
+export const ENTITY_SEGMENT: Record<EntityKind, string> = {
+  startups: 'startups',
+  entreprises: 'entreprises',
+  personnalites: 'personnalites',
+  'textes-juridiques': 'textes-juridiques',
+}
+
+export const ENTITY_LABELS: Record<EntityKind, Record<Locale, string>> = {
+  startups: { fr: 'Startups', ar: 'شركات ناشئة' },
+  entreprises: { fr: 'Entreprises', ar: 'شركات' },
+  personnalites: { fr: 'Personnalités', ar: 'شخصيات' },
+  // « Textes légaux » is the client's wording; the slug stays `textes-juridiques`.
+  'textes-juridiques': { fr: 'Textes légaux', ar: 'نصوص قانونية' },
+}
+
+/** A labelled row in the hub's identity panel — "Siège", "Secteur", "Adopté le"… */
+export interface EntityFact {
+  label: string
+  value: string
+}
+
+export interface EntitySummary {
+  id: string
+  kind: EntityKind
+  slug: string
+  name: string
+  /** One line under the name in listings. */
+  kicker: string
+  image?: ImageInput
+  /**
+   * The official text, downloadable. Only `textes-juridiques` populates this —
+   * it is what makes the legal-text hub a download library as well as a hub.
+   */
+  file?: DownloadFile
+}
+
+export interface Entity extends EntitySummary {
+  summary: string
+  facts: readonly EntityFact[]
+  /** Populated from article relationships — never hand-curated (CLAUDE.md §5). */
+  articles: readonly ArticleSummary[]
+}
+
+/* ------------------------------------------------------------- static pages */
+
+export interface StaticPage {
+  slug: string
+  title: string
+  intro: string
+  image?: ImageInput
+  body: readonly BodyBlock[]
+  /** Kept out of the index when the page is legal boilerplate or an account form. */
+  noindex?: boolean
+}
+
+/* ---------------------------------------------------------------- constants */
 
 export const FORMAT_LABELS: Record<ArticleFormat, Record<Locale, string>> = {
   actualite: { fr: 'Actualité', ar: 'خبر' },

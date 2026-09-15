@@ -1,7 +1,9 @@
 import type { CollectionConfig } from 'payload'
 import { publicRead, isEditorial, canCreateContent } from '../lib/payload-access'
+import { revalidationHooks } from '../lib/revalidate'
 import { slugField } from '../fields/slugField'
 import { seoField } from '../fields/seoField'
+import { STATUTS, TYPES_TEXTE, toPayloadOptions } from '../lib/entity-vocab'
 
 /**
  * Entity hub for laws, decrees, bills and circulars.
@@ -19,8 +21,10 @@ import { seoField } from '../fields/seoField'
 export const TextesJuridiques: CollectionConfig = {
   slug: 'textes-juridiques',
   labels: {
-    singular: { fr: 'Texte juridique', ar: 'نص قانوني' },
-    plural: { fr: 'Textes juridiques', ar: 'النصوص القانونية' },
+    // « Textes légaux » : le mot du client, aligné sur ce qu'affiche le site
+    // (lib/content-types.ts, ENTITY_LABELS). Le slug reste `textes-juridiques`.
+    singular: { fr: 'Texte légal', ar: 'نص قانوني' },
+    plural: { fr: 'Textes légaux', ar: 'النصوص القانونية' },
   },
   admin: {
     useAsTitle: 'title',
@@ -33,6 +37,7 @@ export const TextesJuridiques: CollectionConfig = {
     update: isEditorial,
     delete: isEditorial,
   },
+  hooks: revalidationHooks,
   fields: [
     {
       name: 'title',
@@ -68,16 +73,7 @@ export const TextesJuridiques: CollectionConfig = {
           required: true,
           index: true,
           label: { fr: 'Type', ar: 'النوع' },
-          options: [
-            { label: { fr: 'Loi', ar: 'قانون' }, value: 'loi' },
-            { label: { fr: 'Projet de loi', ar: 'مشروع قانون' }, value: 'projet-de-loi' },
-            { label: { fr: 'Décret', ar: 'مرسوم' }, value: 'decret' },
-            { label: { fr: 'Arrêté', ar: 'قرار' }, value: 'arrete' },
-            { label: { fr: 'Circulaire', ar: 'دورية' }, value: 'circulaire' },
-            { label: { fr: 'Dahir', ar: 'ظهير' }, value: 'dahir' },
-            { label: { fr: 'Convention internationale', ar: 'اتفاقية دولية' }, value: 'convention' },
-            { label: { fr: 'Décision / jurisprudence', ar: 'قرار قضائي' }, value: 'jurisprudence' },
-          ],
+          options: toPayloadOptions(TYPES_TEXTE),
         },
       ],
     },
@@ -91,12 +87,7 @@ export const TextesJuridiques: CollectionConfig = {
           defaultValue: 'en-vigueur',
           index: true,
           label: { fr: 'Statut', ar: 'الوضعية' },
-          options: [
-            { label: { fr: 'En vigueur', ar: 'ساري المفعول' }, value: 'en-vigueur' },
-            { label: { fr: 'En projet', ar: 'قيد المسطرة' }, value: 'projet' },
-            { label: { fr: 'Modifié', ar: 'معدل' }, value: 'modifie' },
-            { label: { fr: 'Abrogé', ar: 'ملغى' }, value: 'abroge' },
-          ],
+          options: toPayloadOptions(STATUTS),
         },
         {
           name: 'dateStatut',
@@ -136,6 +127,25 @@ export const TextesJuridiques: CollectionConfig = {
         description: {
           fr: 'URL du texte sur le site du SGG ou du Bulletin officiel.',
           ar: 'رابط النص في موقع الأمانة العامة للحكومة أو الجريدة الرسمية.',
+        },
+      },
+    },
+    {
+      /**
+       * The official text itself — this is what makes the legal hub the SECOND
+       * download library (client instruction: the two must stay separate). It
+       * sits here rather than in `Documents` so a text keeps ONE page: summary,
+       * statut, our articles and the PDF, at one URL.
+       */
+      name: 'fichier',
+      type: 'upload',
+      relationTo: 'fichiers',
+      localized: true,
+      label: { fr: 'Texte officiel (fichier)', ar: 'النص الرسمي (ملف)' },
+      admin: {
+        description: {
+          fr: 'Le texte tel que publié. La version arabe et la version française sont deux fichiers distincts.',
+          ar: 'النص كما نشر. النسخة العربية والنسخة الفرنسية ملفان منفصلان.',
         },
       },
     },

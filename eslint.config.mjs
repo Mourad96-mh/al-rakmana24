@@ -66,6 +66,10 @@ export default tseslint.config(
         Buffer: 'readonly',
         console: 'readonly',
         __dirname: 'readonly',
+        // Node 22 ships these as globals; the scripts fetch and resize images.
+        fetch: 'readonly',
+        AbortSignal: 'readonly',
+        setTimeout: 'readonly',
       },
     },
   },

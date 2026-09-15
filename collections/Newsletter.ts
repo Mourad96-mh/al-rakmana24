@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { isEditorial, isAdmin } from '../lib/payload-access'
+import { isEditorial, isEditorialUser, isAdmin } from '../lib/payload-access'
 
 /**
  * Newsletter subscribers.
@@ -32,6 +32,9 @@ export const Newsletter: CollectionConfig = {
       fr: 'Données personnelles (loi 09-08). Ne pas exporter hors des besoins de la newsletter ; toute désinscription doit être honorée sans délai.',
       ar: 'معطيات شخصية (القانون 09-08). لا تصدر خارج حاجات النشرة؛ كل إلغاء اشتراك يجب أن ينفذ فورا.',
     },
+    // Matches `read` below: a contributeur is refused anyway, so the nav should
+    // not offer the entry in the first place. Same treatment as `Abonnes`.
+    hidden: ({ user }) => !isEditorialUser(user),
   },
   access: {
     // Public sign-up goes through a Server Action with the local API, not here.

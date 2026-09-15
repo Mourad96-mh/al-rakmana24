@@ -1,0 +1,129 @@
+/*
+ * Chrome for the offline preview. Intentionally NOT branded: everything below
+ * the control bar must read as the Payload admin, so the harness itself stays
+ * neutral grey and out of the way. Colours here are literals, not site tokens —
+ * globals.css is not loaded in this route group.
+ */
+
+.shell {
+  min-block-size: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f2f3f5;
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+  color: #101418;
+}
+
+/* ---------- control bar ---------- */
+
+.bar {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+  padding: 0.9rem 1.5rem;
+  background: #ffffff;
+  border-block-end: 1px solid #dcdfe3;
+}
+
+.title {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: 0.9375rem;
+}
+
+.subtitle {
+  font-size: 0.75rem;
+  color: #6b7178;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+}
+
+.group {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.legend {
+  padding: 0;
+  margin-block-end: 0.3rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #8a9099;
+}
+
+.segments {
+  display: flex;
+}
+
+.segment {
+  padding: 0.35rem 0.7rem;
+  border: 1px solid #dcdfe3;
+  background: #ffffff;
+  font: inherit;
+  font-size: 0.8125rem;
+  color: #3c4149;
+  cursor: pointer;
+}
+
+.segment + .segment {
+  margin-inline-start: -1px;
+}
+
+.segment:hover {
+  background: #f2f3f5;
+}
+
+.segment[aria-pressed='true'] {
+  background: #d92415;
+  border-color: #d92415;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.segment:focus-visible {
+  outline: 2px solid #101418;
+  outline-offset: 1px;
+  z-index: 1;
+}
+
+/* ---------- stage: this is the part that imitates the admin ---------- */
+
+.stage {
+  flex: 1;
+  padding: 2rem 1.5rem 4rem;
+  background: var(--theme-bg);
+  color: var(--theme-text);
+}
+
+/* Roughly the admin's content column, so line lengths match what editors see. */
+.canvas {
+  max-inline-size: 68rem;
+  margin-inline: auto;
+}
+
+.stub {
+  margin: 0;
+  padding: 2.5rem 1.25rem;
+  border: 1px dashed var(--theme-elevation-250);
+  text-align: center;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: var(--theme-elevation-500);
+}

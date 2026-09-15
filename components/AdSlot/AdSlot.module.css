@@ -1,0 +1,186 @@
+/*
+ * Espaces publicitaires.
+ *
+ * Two rules drive this file:
+ *  1. the box is reserved BEFORE the creative exists — `aspect-ratio` on the
+ *     frame, never a height that collapses when the image is missing;
+ *  2. the slot must read as advertising, not as editorial: hairline box, muted
+ *     « Publicité » label, no serif, no red except the "book this space" link.
+ *
+ * Logical properties throughout, so the rail mirrors to the left under /ar
+ * (règle d'or #3) — which is the correct side for an Arabic reader.
+ */
+
+.slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3xs);
+  min-inline-size: 0;
+}
+
+.label {
+  margin: 0;
+  color: var(--ink-faint);
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+[dir='rtl'] .label {
+  font-family: var(--font-arabic);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.frame {
+  inline-size: 100%;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+}
+
+/* ---------- formats (IAB) ---------- */
+
+.leaderboard .frame {
+  max-inline-size: 970px;
+  aspect-ratio: 970 / 90;
+}
+
+.rectangle .frame {
+  max-inline-size: 300px;
+  aspect-ratio: 300 / 250;
+}
+
+.halfpage .frame {
+  max-inline-size: 300px;
+  aspect-ratio: 300 / 600;
+}
+
+/* ---------- booked creative ---------- */
+
+.creative {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.image {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: contain;
+}
+
+/* ---------- unsold slot ---------- */
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3xs);
+  inline-size: 100%;
+  block-size: 100%;
+  padding: var(--space-2xs);
+  border: 1px dashed var(--border-strong);
+  color: var(--ink-muted);
+  font-family: var(--font-sans);
+  text-align: center;
+  text-decoration: none;
+}
+
+[dir='rtl'] .empty {
+  font-family: var(--font-arabic);
+}
+
+.empty:hover {
+  background: var(--surface);
+  border-color: var(--accent);
+  color: var(--ink);
+}
+
+.emptyTitle {
+  font-size: var(--step--1);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.emptySize {
+  /* « 300 × 250 » is a dimension, not a sentence: left to the bidi algorithm it
+     comes out reversed as « 250 × 300 » under /ar. One of the rare cases where
+     an explicit direction is correct (règle d'or #3). */
+  direction: ltr;
+  unicode-bidi: isolate;
+  color: var(--ink-faint);
+  font-size: 0.6875rem;
+  font-variant-numeric: lining-nums;
+}
+
+.emptyCta {
+  color: var(--accent);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* The leaderboard is 90px tall: only the title fits. */
+.leaderboard .emptySize,
+.leaderboard .emptyCta {
+  display: none;
+}
+
+/* ---------- top band ---------- */
+
+.band {
+  /* First element of the page, above the masthead. No bottom rule: what follows
+     is the header's own red brand bar, which separates itself. */
+  padding-block: var(--space-s);
+  background: var(--surface);
+}
+
+/* ---------- right rail ---------- */
+
+.rail {
+  /* Stretches to the content column so the sticky slot has room to travel. */
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-l);
+  min-inline-size: 0;
+}
+
+.sticky {
+  position: sticky;
+  /* Clears nothing above it: the masthead is not sticky. */
+  inset-block-start: var(--space-s);
+}
+
+/* ---------- responsive ---------- */
+
+@media (max-width: 1100px) {
+  /* Rail is stacked under the content here — a half-page banner at the foot of
+     the page is unsellable, so only the pavé survives. */
+  .railTall {
+    display: none;
+  }
+
+  .rail {
+    flex-direction: row;
+    justify-content: center;
+    padding-block-start: var(--space-l);
+    border-block-start: 1px solid var(--border);
+  }
+}
+
+@media (max-width: 760px) {
+  /* 970 × 90 on a phone is a 30px-tall sliver; the mobile format is 320 × 100. */
+  .leaderboard .frame {
+    max-inline-size: 320px;
+    aspect-ratio: 320 / 100;
+  }
+}

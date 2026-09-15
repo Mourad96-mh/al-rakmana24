@@ -54,3 +54,28 @@ export function formatRelative(iso: string, locale: Locale, now: Date): string {
   if (hours < 24) return rtf.format(-hours, 'hour')
   return rtf.format(-Math.round(hours / 24), 'day')
 }
+
+/**
+ * File size for a download link. The reader decides whether to tap a 12 MB PDF
+ * on a mobile connection BEFORE tapping it, so this is never optional next to a
+ * download button.
+ *
+ * Western digits in both locales, like the dates above (ar-MA).
+ */
+export function formatFileSize(bytes: number, locale: Locale): string {
+  const nf = new Intl.NumberFormat(locale === 'ar' ? 'ar-MA' : 'fr-MA', {
+    maximumFractionDigits: bytes >= 1_048_576 ? 1 : 0,
+  })
+
+  if (bytes >= 1_048_576) {
+    return `${nf.format(bytes / 1_048_576)} ${locale === 'fr' ? 'Mo' : 'م.ب'}`
+  }
+  return `${nf.format(Math.max(1, Math.round(bytes / 1024)))} ${locale === 'fr' ? 'Ko' : 'ك.ب'}`
+}
+
+/** Runtime for a video thumbnail: 8:32. Seconds in, m:ss out. */
+export function formatDuration(seconds: number): string {
+  const m = Math.floor(seconds / 60)
+  const s = Math.floor(seconds % 60)
+  return `${m}:${s.toString().padStart(2, '0')}`
+}

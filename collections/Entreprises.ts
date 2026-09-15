@@ -1,7 +1,9 @@
 import type { CollectionConfig } from 'payload'
 import { publicRead, isEditorial, canCreateContent } from '../lib/payload-access'
+import { revalidationHooks } from '../lib/revalidate'
 import { slugField } from '../fields/slugField'
 import { seoField } from '../fields/seoField'
+import { NATURES, toPayloadOptions } from '../lib/entity-vocab'
 
 /**
  * Entity hub for everything that is not a startup: established companies, banks,
@@ -27,6 +29,7 @@ export const Entreprises: CollectionConfig = {
     update: isEditorial,
     delete: isEditorial,
   },
+  hooks: revalidationHooks,
   fields: [
     {
       name: 'title',
@@ -50,17 +53,7 @@ export const Entreprises: CollectionConfig = {
           type: 'select',
           index: true,
           label: { fr: 'Nature', ar: 'الطبيعة' },
-          options: [
-            { label: { fr: 'Entreprise privée', ar: 'شركة خاصة' }, value: 'entreprise' },
-            { label: { fr: 'Banque / assurance', ar: 'بنك أو تأمين' }, value: 'banque' },
-            { label: { fr: 'Cabinet d’avocats', ar: 'مكتب محاماة' }, value: 'cabinet' },
-            { label: { fr: 'Administration publique', ar: 'إدارة عمومية' }, value: 'administration' },
-            { label: { fr: 'Régulateur', ar: 'جهة تنظيمية' }, value: 'regulateur' },
-            { label: { fr: 'Fédération / association', ar: 'جامعة أو جمعية' }, value: 'federation' },
-            { label: { fr: 'Fonds d’investissement', ar: 'صندوق استثمار' }, value: 'fonds' },
-            { label: { fr: 'Université / école', ar: 'جامعة أو مدرسة' }, value: 'universite' },
-            { label: { fr: 'Autre', ar: 'أخرى' }, value: 'autre' },
-          ],
+          options: toPayloadOptions(NATURES),
         },
         { name: 'secteur', type: 'text', label: { fr: 'Secteur', ar: 'القطاع' } },
       ],

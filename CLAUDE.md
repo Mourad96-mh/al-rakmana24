@@ -8,7 +8,7 @@ client deliverables and editor documentation are in French / Arabic.**
 
 ## 1. What this is
 
-**Al-Raqmana24.ma** — *Entreprendre, Innover, Digitaliser.*
+**Al-Raqmana24.ma** — _Entreprendre, Innover, Digitaliser._
 A Moroccan online journal covering the **digital economy, digital law, startups,
 legaltech and fintech**. Bilingual **French + Arabic (RTL)**.
 
@@ -26,24 +26,36 @@ Tokens live in `app/globals.css` — never hardcode a colour in a component.
 
 ## 2. Stack — NON-NEGOTIABLE
 
-| Layer | Choice | Pin |
-|---|---|---|
-| Framework | Next.js 15, App Router | `15.5.19` |
-| UI | React 19 | `19.x` |
-| Language | TypeScript, `strict: true` | — |
-| CMS | Payload 3, self-hosted, **same repo** | `3.85.1` |
-| DB | PostgreSQL (Neon, eu-central-1) | — |
-| Images | sharp | `0.34.5` |
-| Styling | **Pure CSS Modules** + tokens | no Tailwind, ever |
-| i18n routing | next-intl, localized pathnames | — |
-| Newsletter | Brevo (behind a tolerant seam) | — |
-| Analytics | Plausible | — |
-| E2E | Playwright | — |
-| Package manager | pnpm | `11.x` |
+| Layer           | Choice                                | Pin               |
+| --------------- | ------------------------------------- | ----------------- |
+| Framework       | Next.js 15, App Router                | `15.5.19`         |
+| UI              | React 19                              | `19.x`            |
+| Language        | TypeScript, `strict: true`            | —                 |
+| CMS             | Payload 3, self-hosted, **same repo** | `3.85.1`          |
+| DB              | MongoDB Atlas                         | —                 |
+| Images          | sharp + Cloudinary (stockage)         | `0.34.5`          |
+| Styling         | **Pure CSS Modules** + tokens         | no Tailwind, ever |
+| i18n routing    | next-intl, localized pathnames        | —                 |
+| Newsletter      | Brevo (behind a tolerant seam)        | —                 |
+| Analytics       | Plausible                             | —                 |
+| E2E             | Playwright                            | —                 |
+| Package manager | pnpm                                  | `11.x`            |
 
 **Why these exact pins** (learned the hard way on MCF News — do not "upgrade to latest"):
 
 - `create-next-app@latest` installs Next 16 → **incompatible with Payload 3**.
+- **DB switched from Postgres/Neon to MongoDB Atlas on 2026-09-05**, while the
+  database was still empty and the change cost a single adapter swap — Payload
+  derives the schema from the collections, so none of the 16 changed. The reason
+  is maintenance, not performance: the developer already operates Atlas and
+  Cloudinary daily, and Mongo removes the schema-migration step entirely. The
+  same swap in six months, over a live archive, would have been a migration.
+- **Uploads go to Cloudinary**, never to the application server: its disk is
+  ephemeral on every host under consideration. Payload has no official
+  Cloudinary adapter and both community packages are dead ends (one is on
+  Payload 2, the other needs 3.88), so `lib/cloudinary-storage.ts` implements
+  the official `plugin-cloud-storage` interface directly. Read it before
+  touching anything upload-related.
 - `sharp` 0.35 **breaks Payload's types**.
 - Node here is 22.14, which breaks tsx's `require(ESM)` / top-level await →
   the Payload CLI must run with `--use-swc`.
@@ -53,10 +65,18 @@ Tokens live in `app/globals.css` — never hardcode a colour in a component.
 ## 3. Règles d'or
 
 **#1 — No payment, no paywall.** The client brief says « S'abonner gratuitement ».
-The `accessLevel` field and the ad-slot component exist but stay **dormant** —
-they are seams for a possible future, not features. Never build a checkout, never
-gate an article, never wire CMI. If asked to "add subscriptions", it means
-*newsletter + free account*.
+The `accessLevel` field exists but stays **dormant** — a seam for a possible
+future, not a feature. Never build a checkout, never gate an article, never wire
+CMI. If asked to "add subscriptions", it means _newsletter + free account_.
+
+Display advertising is the exception, and it is **live**: the client asked for
+« espaces publicitaires » in the header and in a right-hand rail (2026-09-05).
+Ads sell space, they do not gate content — the rule above is untouched.
+`components/AdSlot` renders every emplacement, `lib/ads.ts` holds the booked
+creatives (empty for now → each slot shows a labelled placeholder linking to
+« Nous contacter »). Slots stay **server-rendered**: the reserved box is what
+keeps CLS at zero and the pages SSG. A future ad server / personalised creative
+must be a client island mounted _inside_ that box, never a `cookies()` read.
 
 **#2 — `localization.fallback` is `false`. Never turn it on.**
 With fallback enabled, an untranslated Arabic article silently renders in French
@@ -73,7 +93,7 @@ AR-only, or both. Therefore:
 `inset-inline`. No `left`/`right` in layout CSS. `dir` is set on `<html>` from the
 route param. Only directional glyphs need explicit mirroring.
 
-**#4 — Public routes must stay SSG/ISR.** The site has no paywall, so *every* page
+**#4 — Public routes must stay SSG/ISR.** The site has no paywall, so _every_ page
 is publicly cacheable — that is our main performance advantage over the reference
 site. Never read `cookies()` / `headers()` in a layout or in a component mounted by
 the layout: it opts the whole tree into dynamic rendering. Anything viewer-specific
@@ -116,9 +136,14 @@ own their document.
 /{lang}/{rubrique}/{sous-rubrique}/
 /{lang}/article/{slug}/                     namespaced — avoids collisions with static pages
 /{lang}/podcast/   /{lang}/podcast/{slug}/
+/{lang}/documents/                          téléchargements de la rédaction :
+                                            contrats types, attestations, études, synthèses
+                                            (ar: /وثائق) — les TEXTES LÉGAUX ne sont pas ici
 /{lang}/startups/{slug}/                    entity hubs — the SEO moat,
 /{lang}/entreprises/{slug}/                 auto-populated from article
-/{lang}/textes-juridiques/{slug}/           relationships, never hand-curated
+/{lang}/textes-juridiques/{slug}/           relationships, never hand-curated.
+                                            Porte AUSSI le texte officiel en
+                                            téléchargement — 2e bibliothèque
 /{lang}/personnalites/{slug}/
 /{lang}/dossiers/{slug}/   /auteurs/{slug}/   /tags/{slug}/
 /{lang}/la-redaction/ /qui-sommes-nous/ /nous-rejoindre/ /nous-contacter/ /newsletter/
@@ -132,8 +157,38 @@ Pathnames are **localized** (next-intl).
 
 ## 6. Content model
 
-`Articles` `Auteurs` `Podcasts` `Startups` `Entreprises` `Personnalites`
-`TextesJuridiques` `Dossiers` `Tags` `Pages` `Newsletter` `Media` `Users`
+18 collections, in the order they appear in `payload.config.ts` — which is also
+the order of the admin sidebar, grouped by how often the newsroom touches them:
+
+| Groupe             | Collections                                                          |
+| ------------------ | -------------------------------------------------------------------- |
+| **Contenu**        | `Articles` `Podcasts` `Videos` `Documents` `Dossiers` `Pages` `Media` `Fichiers` |
+| **Entités**        | `Startups` `Entreprises` `Personnalites` `TextesJuridiques`           |
+| **Rédaction**      | `Auteurs` `Tags`                                                      |
+| **Régie**          | `Publicites`                                                          |
+| **Audience**       | `Newsletter` `Abonnes`                                                |
+| **Administration** | `Users`                                                               |
+
+`Auteurs` is a byline, not an account: a contributor can be credited without
+ever having a login, and a `Users` record is not automatically an author.
+
+`Media` holds images only; `Fichiers` is the same thing for PDF/DOC/XLS/ZIP —
+Payload generates renditions for whatever lands in Media, which is meaningless
+for a PDF, and the médiathèque must stay searchable for photographers.
+
+**Videos are embedded, never hosted** (same reason as the podcast audio): the
+collection stores the YouTube/Vimeo URL, `lib/video-url.ts` parses it at save
+time, and `components/VideoCard` renders a click-to-play FACADE — the provider's
+iframe and its cookies load only when the reader presses play. Three embeds on
+the homepage would otherwise outweigh the whole rest of the site.
+
+**Two download libraries, and they must stay separate** (client instruction):
+`Documents` (contrats types, attestations, études, synthèses — our own material,
+at `/{lang}/documents`) and the official legal texts, which are NOT a second
+corpus: the file hangs off `TextesJuridiques.fichier` so a text keeps one URL,
+with its résumé, son statut and our articles. Never merge them — it would give
+each text two competing pages and blur, for the reader, the line between what
+the newsroom drafted and what the State published.
 
 Localized fields: `title`, `slug`, `excerpt`, `body`, `seo`.
 Shared (non-localized): `publishedAt`, `rubrique`, `sousRubrique`, `coverImage`,
@@ -141,21 +196,52 @@ Shared (non-localized): `publishedAt`, `rubrique`, `sousRubrique`, `coverImage`,
 
 `Articles.format`: Actualité | Analyse | Décryptage | Interview | Tribune | Infographie.
 
-Roles: `admin`, `redacteur-en-chef`, `journaliste`, `contributeur` (drafts only), `abonne`.
+### Comptes : deux collections, et elles ne se mélangent jamais
+
+**`Users` = la rédaction.** Roles: `admin`, `redacteur-en-chef`, `journaliste`,
+`contributeur` (drafts only). Every record in it is staff; there is no
+reader-level role. Default on create is `contributeur`, the least-privileged
+**staff** role — so an account created with `role` stripped can draft and
+nothing else.
+
+**`Abonnes` = les lecteurs.** The free accounts (règle d'or #1: free, always).
+It has **no `role` field at all**, deliberately — a reader cannot be promoted.
+
+Why two collections rather than one with a role, which is the obvious design and
+was the original one: Payload's admin authenticates against exactly **one**
+collection, the one named by `admin.user`. With readers in `Users`, a reader's
+e-mail and password were *valid credentials at `/admin/login`* — they
+authenticated, and were refused only afterwards by an access rule. One
+regression in that rule and the back-office is open. Split, a reader's password
+does not fit the lock at all, and the refusal stops depending on a check being
+correct. Privilege is now a property of **which collection an account lives in**,
+not of a column.
+
+Consequence: `req.user` on a public request is an `Abonne`, which has no `role`,
+so every helper in `lib/payload-access.ts` fails closed on it with no special
+case. `staffAdminPanel` remains as a second lock, for a staff account whose role
+was narrowed after creation.
+
+**Never create the first admin through `/admin/create-first-user` on a
+reachable host.** Payload serves that screen for as long as `users` is empty, so
+the window belongs to whoever finds `/admin` first. Run `pnpm create-admin`
+(`ADMIN_EMAIL` / `ADMIN_PASSWORD` / `ADMIN_NOM`) as a deployment step, before DNS
+points at the box — it is idempotent, never rewrites an existing password, and
+refuses to run once the collection is non-empty.
 
 ---
 
 ## 7. Rubriques (verbatim from the client brief)
 
-| Rubrique | Sous-rubriques |
-|---|---|
-| Économie | — |
-| Actus juridique | Propriété intellectuelle & numérique · Droit des plateformes · Droit & confiance numérique · Données personnelles |
+| Rubrique             | Sous-rubriques                                                                                                      |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Économie             | —                                                                                                                   |
+| Actus juridique      | Propriété intellectuelle & numérique · Droit des plateformes · Droit & confiance numérique · Données personnelles   |
 | La startup marocaine | Booster votre créativité par le Droit · Meilleures levées de fonds · Meilleurs classements par secteur · Écosystème |
-| Legaltech – Fintech | Marché marocain de la Legaltech · Actualité de la Fintech |
-| Décryptage sectoriel | Réglementation numérique marocaine · Mesures d'encouragement à l'innovation |
-| Tendances | Applis mobiles · Plateformes innovantes · Formations, organisations, fédérations |
-| Podcast | — |
+| Legaltech – Fintech  | Marché marocain de la Legaltech · Actualité de la Fintech                                                           |
+| Décryptage sectoriel | Réglementation numérique marocaine · Mesures d'encouragement à l'innovation                                         |
+| Tendances            | Applis mobiles · Plateformes innovantes · Formations, organisations, fédérations                                    |
+| Podcast              | —                                                                                                                   |
 
 Do not invent rubriques. Changes come from the client, in writing.
 
@@ -163,7 +249,10 @@ Do not invent rubriques. Changes come from the client, in writing.
 
 ## 8. Deployment
 
-Target: **Hostinger VPS (KVM), Docker** — Next + Payload + Postgres.
+Target: **one Node service** (Hostinger VPS Docker, or Render) — Next + Payload
+in a single process, with MongoDB Atlas and Cloudinary outside it. There is no
+separate frontend to upload anywhere: the pages and `/admin` come out of the
+same server.
 The client asked for Hostinger shared / cPanel; shared cannot run Node, Payload's
 admin, or ISR, so the plan assumes a VPS on the same vendor. **Confirm before Lot 8.**
 Fallbacks, in order: (a) Hostinger domain + email, app on Vercel; (b) static export on
@@ -178,7 +267,7 @@ Publish flow: Payload `afterChange` → `revalidatePath` for **both** locales �
 - **OneDrive dehydrates `.next`** → `EINVAL readlink` / `MODULE_NOT_FOUND`. This folder
   is pinned (`attrib +P -U ... /s /d`). `.next` must be a **real directory inside the
   project** — `distDir` elsewhere and junctions both fail.
-- **`EPERM rename ...tmp -> ...`** in `.next` is a *lock*, not dehydration: three antivirus
+- **`EPERM rename ...tmp -> ...`** in `.next` is a _lock_, not dehydration: three antivirus
   products are installed and Defender's service is dead, so `Add-MpPreference` is useless.
   Exclusions must be set in McAfee's and Reason's own UI.
 - **Never run `pnpm build` while the user's `next dev` is running** — it corrupts `.next`.
@@ -205,6 +294,52 @@ Publish flow: Payload `afterChange` → `revalidatePath` for **both** locales �
   from the parent home directory.
 - **This folder is its own git repo** (`git init` run here). The parent
   `C:\Users\MOURAD\.git` mega-repo must never be committed to from this project.
+- **Dynamic route params arrive PERCENT-ENCODED and Next never decodes them.**
+  `/ar/%D8%A7%D9%82%D8%AA%D8%B5%D8%A7%D8%AF` reaches the page as
+  `params.rubrique === '%D8%A7...'`, not `'اقتصاد'` — so every lookup against a slug
+  from `lib/rubriques.ts` misses and the whole Arabic side 404s, invisibly, because
+  every French slug is ASCII and therefore identical either way. Always resolve a
+  slug through `decodeParam()` and emit static params through `encodeParam()`
+  (`lib/params.ts`). Related: `dynamicParams = false` **cannot** be used on the
+  `[rubrique]` routes — it answers `NoFallbackError` for non-ASCII segments even
+  when the prerender manifest key matches the request byte for byte.
+- **`routing.pathnames` localizes segments, so a hand-written internal URL costs a
+  307 on /ar.** `/ar/article/x` redirects to `/ar/مقال/x`, which makes the wrong URL
+  look like it works while the page's own canonical disagrees with the served one.
+  Build every internal link through `lib/links.ts`; nothing else concatenates a path.
+- **Payload's `afterDelete` hands you a document whose LOCALIZED fields are all
+  `undefined`.** Not resolved into the request locale, not shaped as `{ fr, ar }` —
+  gone; only the shared fields (`rubrique`, `_status`, `publishedAt`) survive. So a
+  hook that needs a deleted document's slug must read it in **`beforeDelete`**, while
+  the row still exists, and hand it forward through `req.context` (keyed by id — one
+  `delete({ where })` fires the pair once per matching document on a shared request).
+  Measured on a real delete: `title=undefined slug=undefined rubrique="economie"
+  status="published"`. The cost of getting it wrong is that a withdrawn article keeps
+  serving its cached HTML at its own URL until the next build.
+- **`generateStaticParams` must emit slugs through `encodeParam()`** — the prerender
+  manifest is matched against the RAW request path, so an Arabic slug written
+  literally produces a manifest key no request can ever equal. With `dynamicParams`
+  true this does not 404, which is what makes it easy to miss: the page is built and
+  then silently never served from the build, rendering on demand every time the cache
+  is cold. Check `.next/prerender-manifest.json` — every `/ar/…` key must be
+  percent-encoded.
+- **A `pnpm build` can fail with `payloadInitError: true` on a transient Atlas
+  hiccup** (`Failed to collect page data for …`, thrown out of `generateStaticParams`).
+  It is not a code error; re-run before debugging it.
+- **A `required` + `localized` upload field cannot be half-translated, and that is
+  the point.** `Documents.fichier` is both, so Payload REFUSES an `update` that adds
+  only an Arabic `title`: the Arabic file is required in the same save. An editor
+  therefore cannot produce a document whose Arabic page would offer the French PDF —
+  règle d'or #2 is enforced at the write, not merely filtered at the read. Measured:
+  `ValidationError: Le champ suivant n'est pas valide : Fichier à télécharger`.
+  The drop in `documentSummaryOf()` stays as the second lock, for rows written by a
+  script.
+- **The institutional pages are addressed by `cle`, and one key does not match its
+  URL.** The route segment is `/confidentialite` but the stored key is
+  `politique-de-confidentialite` (the value `collections/Pages.ts` offers in its
+  dropdown). Naming the segment in the route constant silently finds no page and
+  404s a link that sits in the footer of every page. The seed creates all six keys
+  for exactly this reason.
 - **Playwright `getByLabel` matches substrings case-insensitively.** Once a newsletter
   field named « Adresse e-mail » exists in the footer, any `getByLabel("E-mail")`
   becomes a strict-mode violation. Use `{ exact: true }`.
@@ -218,6 +353,8 @@ pnpm dev            # port 3000, often falls through to 3001
 pnpm build          # never while a dev server is running
 pnpm lint
 pnpm seed           # idempotent bilingual demo data
+pnpm create-admin   # premier compte admin depuis l'environnement (voir §6)
+                    # ADMIN_EMAIL=... ADMIN_PASSWORD=... ADMIN_NOM=... pnpm create-admin
 pnpm test:e2e       # Playwright
 pnpm payload -- --use-swc <cmd>
 ```

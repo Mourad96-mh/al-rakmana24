@@ -3,6 +3,7 @@ import type { ArticleSummary } from '@/lib/content-types'
 import { FORMAT_LABELS } from '@/lib/content-types'
 import { findRubrique, findSousRubrique, type Locale } from '@/lib/rubriques'
 import { resolveMedia, isPlaceholder } from '@/lib/media'
+import * as links from '@/lib/links'
 import { formatDayMonth } from '@/lib/format'
 import styles from './ArticleCard.module.css'
 
@@ -42,8 +43,8 @@ export function ArticleCard({
   showExcerpt?: boolean
 }) {
   const withImage = variant === 'lead' || variant === 'standard'
-  const image = withImage ? resolveMedia(article.image, article.slug, SIZES[variant]) : null
-  const href = `/${locale}/article/${article.slug}`
+  const image = withImage ? resolveMedia(article.image, article.slug, SIZES[variant], locale) : null
+  const href = links.article(locale, article.slug)
   const excerpt = (showExcerpt ?? variant === 'lead') ? article.excerpt : undefined
 
   return (

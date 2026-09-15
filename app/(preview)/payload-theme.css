@@ -1,0 +1,82 @@
+/*
+ * Payload's admin theme variables, reproduced for the offline preview.
+ *
+ * WHY THIS FILE EXISTS: `Welcome.module.css` deliberately colours itself from
+ * Payload's own `--theme-*` variables so the dashboard survives the admin's
+ * dark mode. Those variables are defined by `@payloadcms/ui`, which is only
+ * loaded inside the (payload) route group — outside it every `var()` would fall
+ * back and the preview would lie about the design.
+ *
+ * Values copied verbatim from
+ *   @payloadcms/ui/dist/scss/colors.scss  (3.85.1)
+ * Payload scopes them to `html[data-theme]`; here they hang off a wrapper
+ * attribute instead, so the preview can flip themes without touching <html>.
+ *
+ * If Payload is upgraded and the ramp moves, this file goes stale silently —
+ * it is a preview aid, not a source of truth. The admin itself never reads it.
+ */
+
+[data-preview-theme] {
+  --base: 1.25rem;
+
+  --theme-elevation-0: rgb(255, 255, 255);
+  --theme-elevation-50: rgb(245, 245, 245);
+  --theme-elevation-100: rgb(235, 235, 235);
+  --theme-elevation-150: rgb(221, 221, 221);
+  --theme-elevation-200: rgb(208, 208, 208);
+  --theme-elevation-250: rgb(195, 195, 195);
+  --theme-elevation-300: rgb(181, 181, 181);
+  --theme-elevation-350: rgb(168, 168, 168);
+  --theme-elevation-400: rgb(154, 154, 154);
+  --theme-elevation-450: rgb(141, 141, 141);
+  --theme-elevation-500: rgb(128, 128, 128);
+  --theme-elevation-550: rgb(114, 114, 114);
+  --theme-elevation-600: rgb(101, 101, 101);
+  --theme-elevation-650: rgb(87, 87, 87);
+  --theme-elevation-700: rgb(74, 74, 74);
+  --theme-elevation-750: rgb(60, 60, 60);
+  --theme-elevation-800: rgb(47, 47, 47);
+  --theme-elevation-850: rgb(34, 34, 34);
+  --theme-elevation-900: rgb(20, 20, 20);
+  --theme-elevation-950: rgb(7, 7, 7);
+
+  /* From app/(payload)/custom.css. Light theme ONLY — see the dark block below
+     and the warning in custom.css itself: 1000 is the admin's TEXT colour and
+     Payload inverts it, so pinning the brand black here in both themes painted
+     black text on the black panel. */
+  --theme-elevation-1000: #101418;
+
+  --theme-bg: var(--theme-elevation-0);
+  --theme-text: var(--theme-elevation-800);
+  --theme-border-color: var(--theme-elevation-150);
+}
+
+/* Dark mode inverts the ramp — note 500 is deliberately NOT overridden by
+   Payload, and 900/950/1000 all collapse onto white. */
+[data-preview-theme='dark'] {
+  --theme-elevation-0: rgb(20, 20, 20);
+  --theme-elevation-50: rgb(34, 34, 34);
+  --theme-elevation-100: rgb(47, 47, 47);
+  --theme-elevation-150: rgb(60, 60, 60);
+  --theme-elevation-200: rgb(74, 74, 74);
+  --theme-elevation-250: rgb(87, 87, 87);
+  --theme-elevation-300: rgb(101, 101, 101);
+  --theme-elevation-350: rgb(114, 114, 114);
+  --theme-elevation-400: rgb(141, 141, 141);
+  --theme-elevation-450: rgb(154, 154, 154);
+  --theme-elevation-500: rgb(128, 128, 128);
+  --theme-elevation-550: rgb(168, 168, 168);
+  --theme-elevation-600: rgb(181, 181, 181);
+  --theme-elevation-650: rgb(195, 195, 195);
+  --theme-elevation-700: rgb(208, 208, 208);
+  --theme-elevation-750: rgb(221, 221, 221);
+  --theme-elevation-800: rgb(235, 235, 235);
+  --theme-elevation-850: rgb(245, 245, 245);
+  --theme-elevation-900: rgb(255, 255, 255);
+  --theme-elevation-950: rgb(255, 255, 255);
+  /* Must be restated here: without it the light-theme brand black above leaks
+     into dark mode, which is exactly the bug this file failed to reveal. */
+  --theme-elevation-1000: rgb(255, 255, 255);
+
+  --theme-text: var(--theme-elevation-800);
+}

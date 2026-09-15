@@ -17,6 +17,9 @@ const nextConfig: NextConfig = {
 
   images: {
     formats: ['image/avif', 'image/webp'],
+    // Les medias sont servis par Cloudinary (voir lib/cloudinary-storage.ts).
+    // Sans cette autorisation, next/image refuse l'URL et la page casse.
+    remotePatterns: [{ protocol: 'https', hostname: 'res.cloudinary.com' }],
   },
 
   // Payload's admin bundle is large and its generated types lag behind; keep the

@@ -1,0 +1,42 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-xl);
+  margin-block-end: var(--space-2xl);
+}
+
+.charter {
+  padding-block-start: var(--space-l);
+  border-block-start: 2px solid var(--rule);
+  max-inline-size: var(--measure);
+}
+
+.charterTitle {
+  margin: 0 0 var(--space-s);
+  font-size: var(--step-3);
+}
+
+.charterList {
+  margin: 0 0 var(--space-m);
+  padding-inline-start: var(--space-m);
+}
+
+.charterList li {
+  margin-block-end: var(--space-2xs);
+}
+
+.charterList li::marker {
+  color: var(--accent);
+}
+
+.charterContact {
+  margin: 0;
+  font-weight: 700;
+}
+
+@media (max-width: 800px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-l);
+  }
+}

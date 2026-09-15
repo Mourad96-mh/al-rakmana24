@@ -89,6 +89,19 @@ let updated = 0
  * present locale performs the `create`, the rest are `update`s scoped to their
  * locale — which is exactly how Payload models a partially translated document.
  */
+/**
+ * Options communes a chaque ecriture du seed.
+ *
+ * `disableRevalidate` : le seed tourne dans un simple process Node, hors du
+ * serveur Next. Les hooks `afterChange` de lib/revalidate.ts y appelleraient
+ * `revalidatePath` sans requete a laquelle se rattacher — une centaine
+ * d'avertissements pour rien. Le site est de toute facon rebati juste apres.
+ */
+const WRITE_OPTS = {
+  overrideAccess: true,
+  context: { disableRevalidate: true },
+} as const
+
 async function upsert<TSlug extends keyof Config['collections'] & string>(
   payload: Payload,
   collection: TSlug,
@@ -132,11 +145,11 @@ async function upsert<TSlug extends keyof Config['collections'] & string>(
     const data = { ...shared, ...byLocale[locale] }
 
     if (id === undefined) {
-      const doc = await api.create({ collection, locale, data, overrideAccess: true })
+      const doc = await api.create({ collection, locale, data, ...WRITE_OPTS })
       id = doc.id
       created += 1
     } else {
-      await api.update({ collection, id, locale, data, overrideAccess: true })
+      await api.update({ collection, id, locale, data, ...WRITE_OPTS })
       updated += 1
     }
   }
@@ -653,17 +666,71 @@ async function seed(payload: Payload): Promise<void> {
       fr: ['Nous contacter', 'nous-contacter', 'Coordonnées de la rédaction. Texte de démonstration.'],
       ar: ['اتصل بنا', 'اتصل-بنا', 'عناوين الاتصال بهيئة التحرير. نص للعرض التوضيحي.'],
     },
+    /**
+     * Les trois suivantes ne sont pas décoratives : le pied de page renvoie
+     * vers « Nous rejoindre », « Mentions légales » et « Politique de
+     * confidentialité » depuis CHAQUE page du site. Sans document derrière la
+     * clé, `getPage` retourne `null` et ces trois liens répondent 404 —
+     * partout, dans les deux langues.
+     *
+     * ⚠️ Les deux dernières sont de la surface juridique (loi 09-08). Le texte
+     * ci-dessous est un GABARIT à faire relire, pas une mention légale valable.
+     */
+    {
+      cle: 'nous-rejoindre',
+      fr: [
+        'Nous rejoindre',
+        'nous-rejoindre',
+        'Le journal accueille des contributions de juristes, de journalistes et de praticiens du numérique. Texte de démonstration, à réécrire par la rédaction.',
+      ],
+      ar: [
+        'انضم إلينا',
+        'انضم-الينا',
+        'ترحب الجريدة بمساهمات الحقوقيين والصحافيين وممارسي الرقمنة. نص للعرض التوضيحي تعيد هيئة التحرير كتابته.',
+      ],
+    },
+    {
+      cle: 'mentions-legales',
+      fr: [
+        'Mentions légales',
+        'mentions-legales',
+        'Directeur de la publication, hébergeur, numéro de dépôt légal et coordonnées de la société éditrice. Gabarit de démonstration : à compléter et à faire valider avant la mise en ligne.',
+      ],
+      ar: [
+        'المعلومات القانونية',
+        'المعلومات-القانونيه',
+        'مدير النشر والمستضيف ورقم الإيداع القانوني وعنوان الشركة الناشرة. نموذج للعرض التوضيحي: يستكمل ويصادق عليه قبل النشر.',
+      ],
+    },
+    {
+      cle: 'politique-de-confidentialite',
+      fr: [
+        'Politique de confidentialité',
+        'politique-de-confidentialite',
+        'Données collectées, finalités, durée de conservation et droits d’accès et de rectification au titre de la loi 09-08. Gabarit de démonstration : à compléter et à faire valider avant la mise en ligne.',
+      ],
+      ar: [
+        'سياسة الخصوصية',
+        'سياسه-الخصوصيه',
+        'المعطيات المجمعة والغايات ومدة الحفظ وحقوق الولوج والتصحيح بمقتضى القانون 09-08. نموذج للعرض التوضيحي: يستكمل ويصادق عليه قبل النشر.',
+      ],
+    },
   ]
 
+  /** Boilerplate juridique : aucune valeur de référencement, et ça dilue l'index. */
+  const NOINDEX = new Set(['mentions-legales', 'politique-de-confidentialite'])
+
   for (const p of pages) {
+    const seo = NOINDEX.has(p.cle) ? { noindex: true } : undefined
+
     await upsert(
       payload,
       'pages',
       { field: 'cle', value: p.cle },
       { cle: p.cle, _status: 'published' },
       {
-        fr: { title: p.fr[0], slug: p.fr[1], body: richText([p.fr[2]], 'fr') },
-        ar: { title: p.ar[0], slug: p.ar[1], body: richText([p.ar[2]], 'ar') },
+        fr: { title: p.fr[0], slug: p.fr[1], body: richText([p.fr[2]], 'fr'), seo },
+        ar: { title: p.ar[0], slug: p.ar[1], body: richText([p.ar[2]], 'ar'), seo },
       },
     )
   }

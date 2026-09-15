@@ -9,6 +9,7 @@ import { routing, dirOf, type AppLocale } from '@/lib/i18n/routing'
 import { Header } from '@/components/Header/Header'
 import { Footer } from '@/components/Footer/Footer'
 import { DemoBanner } from '@/components/DemoBanner/DemoBanner'
+import { AdBand } from '@/components/AdSlot/AdSlot'
 import '../../globals.css'
 
 /* Latin: serif for headlines, sans for UI and body. */
@@ -84,7 +85,13 @@ export default async function FrontendLayout({
           <a className="skip-link" href="#contenu">
             {lang === 'ar' ? 'الانتقال إلى المحتوى الرئيسي' : 'Aller au contenu principal'}
           </a>
-          {/* Remove together with lib/demo-content.ts in Lot 3. */}
+          {/* Espace publicitaire en tête de page — tout en haut, au-dessus du
+              bandeau de titre, sur toutes les pages. */}
+          <AdBand locale={lang as AppLocale} />
+          {/* Every headline now comes from Payload (lib/demo is gone), but the
+              seeded demo articles are still in the database, so the marker
+              stays. Remove it at the Lot 8 handover, once the newsroom's own
+              articles have replaced the seed — never before. */}
           <DemoBanner locale={lang as AppLocale} />
           <Header locale={lang as AppLocale} />
           {children}

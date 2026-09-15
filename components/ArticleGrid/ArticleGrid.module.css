@@ -1,0 +1,67 @@
+.wrap {
+  display: grid;
+  gap: var(--space-xl);
+}
+
+.lead {
+  padding-block-end: var(--space-l);
+  border-block-end: 2px solid var(--rule);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-xl) 0;
+}
+
+/* Hairline gutters, like the homepage rivers. */
+.grid > * {
+  padding-inline: var(--space-l);
+  border-inline-start: 1px solid var(--border);
+}
+
+.grid > *:nth-child(3n + 1) {
+  padding-inline-start: 0;
+  border-inline-start: 0;
+}
+
+.empty {
+  padding-block: var(--space-l);
+  color: var(--ink-muted);
+  font-size: var(--step-1);
+}
+
+@media (max-width: 1000px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .grid > *:nth-child(3n + 1) {
+    padding-inline-start: var(--space-l);
+    border-inline-start: 1px solid var(--border);
+  }
+
+  .grid > *:nth-child(2n + 1) {
+    padding-inline-start: 0;
+    border-inline-start: 0;
+  }
+}
+
+@media (max-width: 700px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-l) 0;
+  }
+
+  .grid > * {
+    padding-inline: 0;
+    border-inline-start: 0;
+    padding-block-end: var(--space-l);
+    border-block-end: 1px solid var(--border);
+  }
+
+  .grid > *:last-child {
+    padding-block-end: 0;
+    border-block-end: 0;
+  }
+}

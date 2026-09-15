@@ -13,14 +13,17 @@
     "generate:types": "payload generate:types",
     "generate:importmap": "payload generate:importmap",
     "seed": "payload --use-swc run ./scripts/seed.ts",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "create-admin": "payload --use-swc run ./scripts/create-admin.ts"
   },
   "dependencies": {
-    "@payloadcms/db-postgres": "3.85.1",
+    "@payloadcms/db-mongodb": "3.85.1",
     "@payloadcms/next": "3.85.1",
+    "@payloadcms/plugin-cloud-storage": "3.85.1",
     "@payloadcms/richtext-lexical": "3.85.1",
     "@payloadcms/translations": "3.85.1",
     "@payloadcms/ui": "3.85.1",
+    "cloudinary": "^2.11.0",
     "graphql": "^16.9.0",
     "next": "15.5.19",
     "next-intl": "^4.1.0",

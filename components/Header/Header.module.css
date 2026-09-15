@@ -3,10 +3,10 @@
   background: var(--surface);
 }
 
-/* ---------- 1. utility bar (black) ---------- */
+/* ---------- 1. red utility bar: date and actions ---------- */
 
 .utility {
-  background: var(--surface-invert);
+  background: var(--brand-red);
   color: #ffffff;
 }
 
@@ -14,7 +14,38 @@
   display: flex;
   align-items: center;
   gap: var(--space-s);
-  min-block-size: 34px;
+  /* Sized for one line of text: the lockup moved down to the white main bar. */
+  min-block-size: 40px;
+}
+
+.wordmark {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.05;
+}
+
+.wordmarkName {
+  font-family: var(--font-heading);
+  font-size: 1.95rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.wordmarkTag {
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+
+[dir='rtl'] .wordmarkTag {
+  letter-spacing: normal;
+  text-transform: none;
+  font-size: 0.8rem;
 }
 
 .date {
@@ -22,7 +53,7 @@
   font-family: var(--font-body);
   font-size: 0.72rem;
   letter-spacing: 0.04em;
-  color: #b0b0b0;
+  color: rgba(255, 255, 255, 0.85);
   text-transform: uppercase;
 }
 
@@ -47,19 +78,19 @@
   font-weight: 600;
   text-decoration: none;
   padding-inline: var(--space-2xs);
-  border-inline-start: 1px solid #333333;
-  border-inline-end: 1px solid #333333;
+  border-inline-start: 1px solid rgba(255, 255, 255, 0.45);
+  border-inline-end: 1px solid rgba(255, 255, 255, 0.45);
 }
 
 .langSwitch:hover {
-  color: var(--brand-red);
+  color: var(--ink);
 }
 
 .subscribe {
   display: inline-flex;
   align-items: center;
   padding-inline: var(--space-s);
-  background: var(--brand-red);
+  background: var(--surface-invert);
   color: #ffffff;
   font-family: var(--font-body);
   font-size: 0.75rem;
@@ -76,21 +107,24 @@
 }
 
 .subscribe:hover {
-  background: var(--brand-red-dark);
-  color: #ffffff;
+  background: #ffffff;
+  color: var(--brand-red);
 }
 
-/* ---------- 2. main bar, logo centred ---------- */
+/* ---------- 2. main bar: menu, BRAND LOCKUP, search ---------- */
 
 .mainInner {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-block-size: 92px;
+  /* Tall enough for the lockup, which now lives on this bar. */
+  min-block-size: 84px;
 }
 
-.brand {
+/* Centred on the bar, not in the flex flow — so the menu trigger and the search
+   keep their own edges however wide they get. */
+.mainBrand {
   position: absolute;
   inset-inline-start: 50%;
   transform: translateX(-50%);
@@ -99,49 +133,23 @@
   gap: var(--space-2xs);
   text-decoration: none;
   color: var(--ink);
+  white-space: nowrap;
 }
 
-/* translateX flips sign under RTL, otherwise the logo lands off-centre. */
-[dir='rtl'] .brand {
+/* translateX does not flip sign on its own; without this the lockup lands
+   off-centre on /ar. */
+[dir='rtl'] .mainBrand {
   transform: translateX(50%);
 }
 
-.logo {
-  block-size: 46px;
+.mainLogo {
+  display: block;
+  flex: 0 0 auto;
+  block-size: 56px;
   inline-size: auto;
 }
 
-.wordmark {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.05;
-}
-
-.wordmarkName {
-  font-family: var(--font-heading);
-  font-size: 1.65rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  white-space: nowrap;
-}
-
-.wordmarkTag {
-  font-family: var(--font-body);
-  font-size: 0.6rem;
-  font-weight: 600;
-  letter-spacing: 0.11em;
-  text-transform: uppercase;
-  color: var(--brand-red);
-  white-space: nowrap;
-}
-
-[dir='rtl'] .wordmarkTag {
-  letter-spacing: normal;
-  text-transform: none;
-  font-size: 0.72rem;
-}
-
-.menuButton,
+/* The menu trigger is styled in MainMenu.module.css — it lives in that island. */
 .searchButton {
   display: inline-flex;
   align-items: center;
@@ -155,32 +163,14 @@
   text-transform: uppercase;
 }
 
-[dir='rtl'] .menuButton,
 [dir='rtl'] .searchButton {
   letter-spacing: normal;
   text-transform: none;
   font-size: 0.82rem;
 }
 
-.menuButton:hover,
 .searchButton:hover {
   color: var(--brand-red);
-}
-
-.burger {
-  inline-size: 20px;
-  block-size: 12px;
-  border-block-start: 2px solid currentColor;
-  border-block-end: 2px solid currentColor;
-  position: relative;
-}
-
-.burger::after {
-  content: '';
-  position: absolute;
-  inset-block-start: 3px;
-  inset-inline: 0;
-  border-block-start: 2px solid currentColor;
 }
 
 .searchIcon {
@@ -257,19 +247,32 @@
   border-block-end-color: var(--brand-red);
 }
 
-@media (max-width: 900px) {
+@media (max-width: 780px) {
+  /* Centring the lockup between the menu trigger and the search stops working at
+     this width, so it takes a row of its own above them. */
   .mainInner {
-    min-block-size: 72px;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-2xs);
+    padding-block: var(--space-2xs);
   }
 
-  .brand {
+  .mainBrand {
     position: static;
     transform: none;
-    margin-inline: auto;
+    order: -1;
+    flex: 1 0 100%;
+    justify-content: center;
   }
 
-  [dir='rtl'] .brand {
+  [dir='rtl'] .mainBrand {
     transform: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .mainLogo {
+    block-size: 44px;
   }
 
   .wordmarkTag,
@@ -278,10 +281,6 @@
   }
 
   .wordmarkName {
-    font-size: 1.25rem;
-  }
-
-  .logo {
-    block-size: 36px;
+    font-size: 1.45rem;
   }
 }

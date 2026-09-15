@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { publicRead, isEditorial, canCreateContent } from '../lib/payload-access'
+import { revalidationHooks } from '../lib/revalidate'
 import { slugField } from '../fields/slugField'
 import { seoField } from '../fields/seoField'
 
@@ -29,6 +30,7 @@ export const Auteurs: CollectionConfig = {
     update: isEditorial,
     delete: isEditorial,
   },
+  hooks: revalidationHooks,
   fields: [
     {
       name: 'title',

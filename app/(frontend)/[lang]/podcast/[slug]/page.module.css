@@ -1,0 +1,114 @@
+.episode {
+  padding-block: var(--space-m) var(--space-2xl);
+}
+
+.header {
+  max-inline-size: 46rem;
+  margin-inline: auto;
+}
+
+.kicker {
+  margin: 0 0 var(--space-xs);
+  color: var(--accent);
+  font-size: var(--step--1);
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+[dir='rtl'] .kicker {
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.title {
+  margin: 0 0 var(--space-s);
+  font-size: clamp(var(--step-4), 4.5vw, 3rem);
+}
+
+.standfirst {
+  margin: 0 0 var(--space-m);
+  color: var(--ink-muted);
+  font-size: var(--step-2);
+  line-height: 1.45;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs) var(--space-m);
+  margin: 0;
+  padding-block: var(--space-2xs);
+  border-block: 1px solid var(--border);
+  color: var(--ink-muted);
+  font-size: var(--step--1);
+}
+
+.figure {
+  margin: var(--space-l) 0;
+}
+
+.image {
+  inline-size: 100%;
+  block-size: auto;
+}
+
+.player {
+  max-inline-size: 46rem;
+  margin: 0 auto var(--space-l);
+  padding: var(--space-m);
+  background: var(--surface-invert);
+  color: #ffffff;
+  font-size: var(--step--1);
+  text-align: center;
+}
+
+.playerFrame {
+  display: block;
+  max-inline-size: 46rem;
+  inline-size: 100%;
+  block-size: 200px;
+  margin: 0 auto var(--space-l);
+  border: 0;
+}
+
+.body {
+  max-inline-size: 46rem;
+  margin-inline: auto;
+}
+
+.transcript {
+  max-inline-size: 46rem;
+  margin: var(--space-l) auto 0;
+  border-block-start: 1px solid var(--border);
+}
+
+.transcriptSummary {
+  padding-block: var(--space-s);
+  color: var(--accent);
+  font-size: var(--step--1);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.transcriptBody {
+  padding-block-end: var(--space-m);
+  color: var(--ink-muted);
+}
+
+.others {
+  padding-block: var(--space-l) var(--space-2xl);
+  border-block-start: 2px solid var(--rule);
+}
+
+.othersGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-l);
+}
+
+@media (max-width: 900px) {
+  .othersGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

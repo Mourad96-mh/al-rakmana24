@@ -1,7 +1,9 @@
 import type { CollectionConfig } from 'payload'
 import { publicRead, isEditorial, canCreateContent } from '../lib/payload-access'
+import { revalidationHooks } from '../lib/revalidate'
 import { slugField } from '../fields/slugField'
 import { seoField } from '../fields/seoField'
+import { SECTEURS, STADES, toPayloadOptions } from '../lib/entity-vocab'
 
 /**
  * Entity hub — the SEO moat (/CLAUDE.md §5, plan Lot 4).
@@ -34,6 +36,7 @@ export const Startups: CollectionConfig = {
     update: isEditorial,
     delete: isEditorial,
   },
+  hooks: revalidationHooks,
   fields: [
     {
       name: 'title',
@@ -57,33 +60,13 @@ export const Startups: CollectionConfig = {
           type: 'select',
           index: true,
           label: { fr: 'Secteur', ar: 'القطاع' },
-          options: [
-            { label: { fr: 'Fintech', ar: 'فينتيك' }, value: 'fintech' },
-            { label: { fr: 'Legaltech', ar: 'ليغالتيك' }, value: 'legaltech' },
-            { label: { fr: 'E-commerce', ar: 'التجارة الإلكترونية' }, value: 'e-commerce' },
-            { label: { fr: 'Santé numérique', ar: 'الصحة الرقمية' }, value: 'healthtech' },
-            { label: { fr: 'Éducation', ar: 'التعليم' }, value: 'edtech' },
-            { label: { fr: 'Logistique', ar: 'اللوجستيك' }, value: 'logistique' },
-            { label: { fr: 'Agritech', ar: 'أغريتيك' }, value: 'agritech' },
-            { label: { fr: 'Énergie', ar: 'الطاقة' }, value: 'energie' },
-            { label: { fr: 'Intelligence artificielle', ar: 'الذكاء الاصطناعي' }, value: 'ia' },
-            { label: { fr: 'Cybersécurité', ar: 'الأمن السيبراني' }, value: 'cybersecurite' },
-            { label: { fr: 'Autre', ar: 'أخرى' }, value: 'autre' },
-          ],
+          options: toPayloadOptions(SECTEURS),
         },
         {
           name: 'stade',
           type: 'select',
           label: { fr: 'Stade', ar: 'المرحلة' },
-          options: [
-            { label: { fr: 'Idée', ar: 'فكرة' }, value: 'idee' },
-            { label: { fr: 'Amorçage', ar: 'بذرة' }, value: 'amorcage' },
-            { label: { fr: 'Série A', ar: 'السلسلة أ' }, value: 'serie-a' },
-            { label: { fr: 'Série B et +', ar: 'السلسلة ب فما فوق' }, value: 'serie-b-plus' },
-            { label: { fr: 'Rentable', ar: 'مربحة' }, value: 'rentable' },
-            { label: { fr: 'Rachetée', ar: 'مستحوذ عليها' }, value: 'rachetee' },
-            { label: { fr: 'Cessée', ar: 'متوقفة' }, value: 'cessee' },
-          ],
+          options: toPayloadOptions(STADES),
         },
       ],
     },

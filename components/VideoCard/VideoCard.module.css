@@ -1,0 +1,176 @@
+/*
+ * Video card. The 16:9 frame is reserved before anything loads, so swapping the
+ * cover for the iframe on click does not move the page a pixel.
+ */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+}
+
+.frame {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--surface-sunken);
+}
+
+.player,
+.cover {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  border: 0;
+}
+
+.cover {
+  display: block;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.cover[disabled] {
+  cursor: default;
+}
+
+.image {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+/* Play badge: a red disc with a triangle. The triangle is the one directional
+   glyph on the card, and it must NOT mirror — a play button points at the
+   timeline, not at the reading direction (règle d'or #3, the exception). */
+.play {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  transform: translate(-50%, -50%);
+  inline-size: 3.5rem;
+  block-size: 3.5rem;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 2px 12px rgb(0 0 0 / 35%);
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+[dir='rtl'] .play {
+  transform: translate(50%, -50%);
+}
+
+.play::after {
+  content: '';
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  margin-block-start: -0.55rem;
+  margin-inline-start: -0.35rem;
+  border-block: 0.55rem solid transparent;
+  border-inline-start: 0.9rem solid #ffffff;
+  border-inline-end: 0;
+}
+
+/* The glyph is drawn with logical borders, so RTL would flip it: put it back. */
+[dir='rtl'] .play::after {
+  transform: scaleX(-1);
+}
+
+.cover:hover .play {
+  background: var(--accent-hover);
+  transform: translate(-50%, -50%) scale(1.06);
+}
+
+[dir='rtl'] .cover:hover .play {
+  transform: translate(50%, -50%) scale(1.06);
+}
+
+.cover[disabled]:hover .play {
+  background: var(--accent);
+  transform: translate(-50%, -50%);
+}
+
+[dir='rtl'] .cover[disabled]:hover .play {
+  transform: translate(50%, -50%);
+}
+
+.cover:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+}
+
+.duration {
+  position: absolute;
+  inset-block-end: var(--space-2xs);
+  inset-inline-end: var(--space-2xs);
+  padding: 0.1rem var(--space-3xs);
+  background: rgb(0 0 0 / 78%);
+  color: #ffffff;
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  font-variant-numeric: lining-nums;
+  /* « 8:32 » is a duration, not a phrase — keep it LTR under /ar. */
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+.pending {
+  position: absolute;
+  inset-block-end: var(--space-2xs);
+  inset-inline-start: var(--space-2xs);
+  max-inline-size: 70%;
+  padding: 0.1rem var(--space-3xs);
+  background: rgb(0 0 0 / 78%);
+  color: #ffffff;
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  text-align: start;
+}
+
+[dir='rtl'] .pending {
+  font-family: var(--font-arabic);
+}
+
+/* ---------- body ---------- */
+
+.body {
+  padding-block-start: var(--space-2xs);
+}
+
+.kicker {
+  margin: 0 0 var(--space-3xs);
+  color: var(--accent);
+  font-family: var(--font-sans);
+  font-size: var(--step--1);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+[dir='rtl'] .kicker {
+  font-family: var(--font-arabic);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.title {
+  margin: 0 0 var(--space-3xs);
+  font-size: var(--step-1);
+  line-height: 1.25;
+}
+
+.meta {
+  margin: 0;
+  color: var(--ink-muted);
+  font-family: var(--font-sans);
+  font-size: var(--step--1);
+}
+
+[dir='rtl'] .meta {
+  font-family: var(--font-arabic);
+}

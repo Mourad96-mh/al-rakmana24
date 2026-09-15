@@ -34,6 +34,10 @@ export const routing = defineRouting({
     '/auteurs/[slug]': { fr: '/auteurs/[slug]', ar: '/محررون/[slug]' },
     '/tags/[slug]': { fr: '/tags/[slug]', ar: '/وسوم/[slug]' },
 
+    // Téléchargements — bibliothèque de la rédaction. Les textes légaux ont
+    // leur propre rubrique : ils restent sur le hub /textes-juridiques.
+    '/documents': { fr: '/documents', ar: '/وثائق' },
+
     // Entity hubs — the SEO moat (Lot 4)
     '/startups/[slug]': { fr: '/startups/[slug]', ar: '/شركات-ناشئة/[slug]' },
     '/entreprises/[slug]': { fr: '/entreprises/[slug]', ar: '/شركات/[slug]' },

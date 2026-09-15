@@ -1,6 +1,7 @@
 import type { TickerItem } from '@/lib/content-types'
 import { findRubrique, type Locale } from '@/lib/rubriques'
 import { formatTime } from '@/lib/format'
+import * as links from '@/lib/links'
 import styles from './FilInfo.module.css'
 
 /**
@@ -23,7 +24,7 @@ export function FilInfo({ items, locale }: { items: TickerItem[]; locale: Locale
               {rubrique ? (
                 <span className={styles.rubrique}>{rubrique.label[locale]}</span>
               ) : null}
-              <a className={styles.link} href={`/${locale}/article/${item.slug}`}>
+              <a className={styles.link} href={links.article(locale, item.slug)}>
                 {item.title}
               </a>
             </div>
