@@ -34,3 +34,20 @@ export function decodeParam(value: string): string {
  * found (`dynamicParams = false` then answers `NoFallbackError` → 404).
  */
 export const encodeParam = (value: string): string => encodeURIComponent(value)
+
+/**
+ * May this (decoded) slug be prerendered at build time?
+ *
+ * EVERYWHERE BUT VERCEL, YES. On Vercel, a page prerendered under a
+ * percent-encoded non-ASCII path is served as a 404 — measured on the first
+ * deployment (2026-09-16): `/ar/%D8%A7%D9%82%D8%AA%D8%B5%D8%A7%D8%AF` came back
+ * `x-nextjs-prerender: 1`, `x-vercel-cache: HIT`, status 404, while the same
+ * build's `.meta` reports 200 under `next start` and the static Arabic
+ * pathnames (`/ar/بودكاست`) are fine. Only the prebuilt copy is broken.
+ *
+ * So on Vercel the Arabic slugs are left out of `generateStaticParams`: with
+ * `dynamicParams` true they render on the first request and are then cached by
+ * ISR like any other page. On a VPS / `next start` nothing changes.
+ */
+export const prerenderSlug = (value: string): boolean =>
+  !process.env.VERCEL || /^[\x20-\x7e]*$/.test(value)

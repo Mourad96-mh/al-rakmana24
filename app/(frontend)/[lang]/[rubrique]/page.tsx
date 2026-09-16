@@ -5,7 +5,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server'
 
 import { routing, type AppLocale } from '@/lib/i18n/routing'
 import { RUBRIQUES, findRubriqueBySlug } from '@/lib/rubriques'
-import { decodeParam, encodeParam } from '@/lib/params'
+import { decodeParam, encodeParam, prerenderSlug } from '@/lib/params'
 import { listArticles } from '@/lib/queries'
 import { absolute, languageAlternates } from '@/lib/site'
 import { Breadcrumbs } from '@/components/Breadcrumbs/Breadcrumbs'
@@ -28,7 +28,10 @@ import { AdRail } from '@/components/AdSlot/AdSlot'
  */
 export async function generateStaticParams() {
   return routing.locales.flatMap((lang) =>
-    RUBRIQUES.map((rubrique) => ({ lang, rubrique: encodeParam(rubrique.slug[lang]) })),
+    RUBRIQUES.filter((rubrique) => prerenderSlug(rubrique.slug[lang])).map((rubrique) => ({
+      lang,
+      rubrique: encodeParam(rubrique.slug[lang]),
+    })),
   )
 }
 

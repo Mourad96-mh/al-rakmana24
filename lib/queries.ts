@@ -39,7 +39,7 @@ import {
   vocabLabel,
 } from './entity-vocab'
 import { formatDate } from './format'
-import { encodeParam } from './params'
+import { encodeParam, prerenderSlug } from './params'
 import { getPayloadClient } from './payload'
 import { lexicalToBlocks, readingMinutes } from './lexical'
 import { parseVideoUrl } from './video-url'
@@ -356,7 +356,7 @@ async function slugParams(collection: string): Promise<{ lang: Locale; slug: str
     for (const lang of ['fr', 'ar'] as const) {
       const slug = text(doc.slug, lang)
       // A slug with no title is a half-saved document, not a page.
-      if (slug && text(doc.title, lang)) out.push({ lang, slug: encodeParam(slug) })
+      if (slug && text(doc.title, lang) && prerenderSlug(slug)) out.push({ lang, slug: encodeParam(slug) })
     }
   }
   return out
@@ -510,7 +510,7 @@ export async function articleParams(): Promise<{ lang: Locale; slug: string }[]>
     for (const lang of ['fr', 'ar'] as const) {
       const slug = text(doc.slug, lang)
       // A slug without a title is a half-saved document, not a page.
-      if (slug && text(doc.title, lang)) out.push({ lang, slug: encodeParam(slug) })
+      if (slug && text(doc.title, lang) && prerenderSlug(slug)) out.push({ lang, slug: encodeParam(slug) })
     }
   }
   return out
@@ -1054,7 +1054,7 @@ export async function podcastParams(): Promise<{ lang: Locale; slug: string }[]>
     for (const lang of ['fr', 'ar'] as const) {
       const slug = text(doc.slug, lang)
       // A slug with no title is a half-saved document, not a page.
-      if (slug && text(doc.title, lang)) out.push({ lang, slug: encodeParam(slug) })
+      if (slug && text(doc.title, lang) && prerenderSlug(slug)) out.push({ lang, slug: encodeParam(slug) })
     }
   }
   return out
