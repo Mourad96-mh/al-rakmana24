@@ -343,6 +343,17 @@ Publish flow: Payload `afterChange` → `revalidatePath` for **both** locales �
 - **Playwright `getByLabel` matches substrings case-insensitively.** Once a newsletter
   field named « Adresse e-mail » exists in the footer, any `getByLabel("E-mail")`
   becomes a strict-mode violation. Use `{ exact: true }`.
+- **Never share one `context` object across Local API upload calls.** Payload uses it
+  as `req.context` by reference, and plugin-cloud-storage stashes the incoming file on
+  it only when nothing is stashed yet — so with a shared `OPTS = { context: {...} }`
+  constant the first upload of the process reaches Cloudinary and every later one
+  silently does not: the Media row exists, its file never does. Build the options per
+  call (`scripts/seed-photos.ts`). Checking afterwards: ask the Cloudinary API, not the
+  CDN — a URL fetched while it 404ed stays cached as a 404 for a while after the upload.
+- **On Vercel, Arabic-slug pages must not be prerendered.** A page prerendered under a
+  percent-encoded non-ASCII path is served as a cached 404 there (fine under
+  `next start`). `prerenderSlug()` in `lib/params.ts` drops them from
+  `generateStaticParams` on Vercel only; they render on first request, then ISR.
 
 ---
 
