@@ -1,0 +1,50 @@
+# Production on the VPS (/opt/al-raqmana24). Secrets live in ./.env on the
+# server only — never committed, never baked into the image.
+#
+# SITE_ADDRESS (in .env) tells Caddy what to serve:
+#   :80                                   HTTP on the bare IP, before DNS
+#   al-raqmana24.ma, www.al-raqmana24.ma  automatic HTTPS once DNS points here
+
+services:
+  app:
+    build:
+      context: .
+      target: runner
+      secrets: [env]
+    image: al-raqmana24:latest
+    env_file: .env
+    restart: unless-stopped
+    expose: ['3000']
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+      - '443:443/udp'
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [app]
+
+  # One-off commands with the full toolchain (never started by `up`):
+  #   docker compose run --rm tools pnpm create-admin
+  tools:
+    build:
+      context: .
+      target: tools
+    image: al-raqmana24-tools:latest
+    env_file: .env
+    profiles: [tools]
+
+secrets:
+  env:
+    file: .env
+
+volumes:
+  caddy_data:
+  caddy_config:

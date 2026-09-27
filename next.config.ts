@@ -13,6 +13,11 @@ const nextConfig: NextConfig = {
   // parent home directory (C:\Users\MOURAD), which breaks output tracing.
   outputFileTracingRoot: projectRoot,
 
+  // Self-contained server bundle for the Docker image (see Dockerfile). Opt-in
+  // through the environment so the local Windows build — OneDrive, three
+  // antivirus products — keeps the plain `.next` layout `next start` expects.
+  output: process.env.NEXT_OUTPUT === 'standalone' ? 'standalone' : undefined,
+
   reactStrictMode: true,
 
   images: {
