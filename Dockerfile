@@ -11,10 +11,13 @@ RUN npm install -g pnpm@11.8.0
 WORKDIR /app
 
 # --- Dependencies ------------------------------------------------------------
+# strict-dep-builds=false: pnpm 11 makes ERR_PNPM_IGNORED_BUILDS fatal, and
+# pnpm-workspace.yaml's allowBuilds still holds pnpm's placeholders. Harmless:
+# sharp, esbuild, @swc/core and @parcel/watcher ship prebuilt linux-x64 binaries.
 FROM base AS deps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
-    pnpm install --frozen-lockfile
+    pnpm install --frozen-lockfile --config.strict-dep-builds=false
 
 # --- Build -------------------------------------------------------------------
 # The build needs the real environment: generateStaticParams reads Atlas, and

@@ -279,6 +279,8 @@ Publish flow: Payload `afterChange` → `revalidatePath` for **both** locales �
   `ERR_PNPM_IGNORED_BUILDS` still prints on an explicit `pnpm install`; harmless here
   because sharp, esbuild, @swc/core and unrs-resolver all ship prebuilt binaries
   (`require('sharp')` verified working, libvips 8.17.3).
+  **In Docker (Linux) it is fatal**: `pnpm install` exits 1. The Dockerfile passes
+  `--config.strict-dep-builds=false` for that reason.
 - **There is a `node_modules` with ~568 packages in the HOME directory**
   (`C:\Users\MOURAD\node_modules`, alongside a stray `package.json`). It is an ancestor
   of every project under `Bureau\`, so Node can resolve packages out of it —
@@ -367,5 +369,6 @@ pnpm seed           # idempotent bilingual demo data
 pnpm create-admin   # premier compte admin depuis l'environnement (voir §6)
                     # ADMIN_EMAIL=... ADMIN_PASSWORD=... ADMIN_NOM=... pnpm create-admin
 pnpm test:e2e       # Playwright
+bash scripts/deploy.sh   # HEAD commité -> VPS /opt/al-raqmana24, rebuild Docker sur place
 pnpm payload -- --use-swc <cmd>
 ```
