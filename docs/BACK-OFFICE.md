@@ -7,6 +7,8 @@ Les règles d'or sont dans `/CLAUDE.md` — elles priment sur ce document.
 
 > Vous cherchez juste à **créer les comptes de votre équipe** ? C'est
 > `GUIDE-EQUIPE.md`, écrit pour être suivi sans rien connaître au code.
+> Vous cherchez **comment s'en servir au quotidien** (publier, traduire,
+> vidéos, publicités) ? C'est `GUIDE-ADMIN.md`.
 
 ---
 
@@ -337,23 +339,12 @@ tourne.**
 À la date de ce document, et pour éviter de promettre au client ce qui n'existe
 pas :
 
-- **Les pages publiques ne lisent pas encore la base.** C'est le point le plus
-  important de cette liste. Les routes de `app/(frontend)/` s'alimentent à
-  `lib/demo/` — des données de démonstration en dur — et non à Payload : il n'y
-  a ni `lib/payload.ts` ni `lib/queries.ts` (Lot 3, toujours ⬜). Concrètement :
-  un article publié depuis `/admin` est bien en base, mais **n'apparaît pas sur
-  le site**, et un article du jeu de démonstration s'y affiche même s'il
-  n'existe dans aucune collection. Vérifié : le slug réel
-  `plateformes-numeriques-cadre-juridique-dedie` répond 404 en ligne, tandis que
-  le slug de démonstration `reforme-cadre-juridique-plateformes-numeriques` est
-  prérendu.
-- **La revalidation après publication existe et fonctionne**
-  (`lib/revalidate.ts`, branchée sur les 12 collections publiques) : une
-  publication, une dépublication ou une suppression marque tout l'arbre
-  `/[lang]` comme périmé, dans les deux locales. Un autosave de brouillon ne
-  déclenche rien. Mais tant que le point précédent tient, elle ne peut faire
-  réapparaître que des données de démonstration : la boucle est prête, elle
-  n'est pas encore branchée sur du vrai contenu.
+- ~~Les pages publiques ne lisent pas encore la base.~~ **Réglé au Lot 3**
+  (`30108d2`) : tout le site lit Payload via `lib/queries.ts`, `lib/demo/` est
+  supprimé. La revalidation (`lib/revalidate.ts`, 12 collections publiques)
+  met donc bien en ligne, en quelques secondes et dans les deux locales, une
+  publication, une dépublication ou une suppression. Un autosave de brouillon
+  ne déclenche rien.
 - **L'aperçu en direct.** `Articles.admin.preview` renvoie `() => null` : pas de
   bouton « Aperçu » vers le site depuis le formulaire.
 - **La publication programmée.** Une `publishedAt` future **ne programme rien** :
@@ -363,11 +354,9 @@ pas :
   **avec** son rate limiting et sa capture de consentement, pas des mois avant.
   Une route de création de compte ouverte sur une collection qu'aucune
   fonctionnalité n'utilise encore n'est que de la surface d'attaque.
-- **Les envois de fichiers.** `DATABASE_URI` est désormais renseigné — `/admin`
-  démarre et `pnpm build` prérend les pages depuis la base — mais
-  **`CLOUDINARY_URL` est vide**. Le plugin de stockage n'a donc pas de
-  destination : tant qu'elle manque, tout upload dans `Media` ou `Fichiers`
-  échouera, et avec lui l'image de couverture d'un article.
+- ~~Les envois de fichiers.~~ **Réglé** : Cloudinary est configuré
+  (`CLOUDINARY_CLOUD_NAME` / `_API_KEY` / `_API_SECRET`), en local comme sur le
+  VPS ; `Media` et `Fichiers` y montent.
 - **Pas d'adaptateur e-mail.** `payload.config.ts` n'en déclare aucun, donc
   Payload ne peut envoyer ni invitation ni lien « mot de passe oublié » : le mot
   de passe initial d'un compte est celui que l'admin saisit dans le formulaire,
